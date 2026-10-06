@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NVEC MY CLASS</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+</head>
+<body>
+<header><div class="brand"><b>NVEC</b><span>MY CLASS</span></div><button id="logoutBtn" class="ghost hidden">로그아웃</button></header>
+<main>
+<section id="loginView" class="panel login">
+<p class="eyebrow">NVEC NATIVE ENGLISH CENTER</p><h1>MY CLASS</h1><p class="muted">매일의 작은 훈련이 영어 실력을 만듭니다.</p>
+<form id="loginForm"><label>회원 ID<input id="memberId" autocomplete="username" placeholder="아이디"></label><label>비밀번호<input id="password" type="password" autocomplete="current-password" placeholder="비밀번호"></label><button class="primary">로그인</button></form><p id="loginMsg" class="msg"></p>
+</section>
+<section id="courseView" class="hidden">
+<div class="hello"><p class="eyebrow">WELCOME TO NVEC</p><h2><span id="memberName">회원</span>님, 오늘도 시작해볼까요?</h2><p class="muted">오늘 학습할 과정을 선택하세요.</p></div>
+<div class="course-grid"><button class="course-card" data-course="adult"><span>ADULT</span><strong>성인과정</strong><small>30번 듣고 · 말하고 · 교정하기</small></button><button class="course-card" data-course="teen"><span>STUDENT</span><strong>초·중·고 과정</strong><small>메인교재 · 단어 · 원서 · NVOCA</small></button></div>
+</section>
+<section id="missionView" class="hidden"><button id="backBtn" class="back">← 과정 선택</button><div class="mission-head"><p class="eyebrow">TODAY'S MISSION</p><h2 id="missionTitle"></h2><p id="today"></p></div><div id="missions" class="missions"></div><div class="progress"><div><b>오늘의 학습 달성률</b><strong id="progressText">0%</strong></div><div class="bar"><i id="progressBar"></i></div></div></section>
+</main>
+<footer>NVEC NATIVE ENGLISH CENTER · MY CLASS</footer>
+<script src="app.js"></script>
+</body></html>
