@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NVEC MY CLASS</title>
-<link rel="stylesheet" href="style.css?v=20261007-1402">
+<link rel="stylesheet" href="style.css?v=20261007-1550">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 </head>
@@ -19,7 +19,15 @@
 <div class="course-grid"><button class="course-card" data-course="adult"><span>ADULT</span><strong>성인과정</strong><small>30번 듣고 · 말하고 · 교정하기</small></button><button class="course-card" data-course="teen"><span>STUDENT</span><strong>초·중·고 과정</strong><small>메인교재 · 단어 · 원서 · NVOCA</small></button></div>
 </section>
 <section id="missionView" class="hidden"><button id="backBtn" class="back">← 과정 선택</button><div class="mission-head"><p class="eyebrow">TODAY'S MISSION</p><h2 id="missionTitle"></h2><p id="today"></p></div><div id="missions" class="missions"></div><div class="progress"><div><b>오늘의 학습 달성률</b><strong id="progressText">0%</strong></div><div class="bar"><i id="progressBar"></i></div></div></section>
+
+<section id="adminView" class="hidden admin-view">
+<div class="admin-head"><div><p class="eyebrow">NVEC ADMIN</p><h2>관리자 종합관리</h2><p class="muted">NVEC원어민어학원 회원 학습 현황</p></div><button id="adminRefresh" class="admin-refresh">새로고침</button></div>
+<div class="admin-stats"><div><span>전체 회원</span><strong id="statTotal">0</strong></div><div><span>오늘 학습</span><strong id="statToday">0</strong></div><div><span>오늘 미학습</span><strong id="statNotToday">0</strong></div><div><span>3일 이상 미학습</span><strong id="statInactive3">0</strong></div><div><span>오늘 평균 달성률</span><strong id="statAvg">0%</strong></div></div>
+<div class="admin-toolbar"><input id="adminSearch" placeholder="회원 ID 또는 이름 검색"><label class="admin-check"><input id="activeOnly" type="checkbox" checked> 활동회원만</label></div>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>회원 ID</th><th>이름</th><th>과정</th><th>오늘 달성률</th><th>최근 학습</th><th>녹음</th><th>월별 성적표</th><th>상태</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+<div id="memberDetail" class="member-detail hidden"></div>
+</section>
 </main>
 <footer>NVEC원어민어학원 · MY CLASS</footer>
-<script src="app.js?v=20261007-1516"></script>
+<script src="app.js?v=20261007-1550"></script>
 </body></html>
