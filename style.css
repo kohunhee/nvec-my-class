@@ -28,3 +28,12 @@ header{overflow:hidden}.brand img{max-width:34px!important;max-height:42px!impor
 .record-tools .check-box.on{background:var(--navy);border-color:var(--navy);color:white}
 .record-tools .check-box.on:disabled{opacity:1}
 .record-tools .check-box:disabled:not(.on){opacity:.5}
+
+.hw-pct{display:block;font-size:16px;color:#071b38;margin-bottom:4px}
+.hw-chips{display:flex;flex-wrap:wrap;gap:4px}
+.hw{display:inline-block;padding:3px 7px;border-radius:6px;font-size:12px;font-weight:800;white-space:nowrap}
+.hw.ok{background:#e3f4ea;color:#18794e}
+.hw.part{background:#fff0d9;color:#a8620b}
+.hw.no{background:#fbe6e6;color:#b23b3b}
+.hw-none{color:#8a8f9b}
+.hw-legend{display:block;font-weight:600;color:#737986;font-size:11px}
