@@ -21,3 +21,10 @@ header{overflow:hidden}.brand img{max-width:34px!important;max-height:42px!impor
 #dash button,#adminDashboard button,.admin-view button{font-weight:800}
 
 .admin-actions{display:flex;gap:10px}.admin-add{padding:10px 16px;border:1px solid var(--navy);border-radius:9px;background:var(--navy);color:#fff;cursor:pointer}.edit-link{border:1px solid #c7ced8;background:#fff;color:#142d50;border-radius:7px;padding:7px 10px;cursor:pointer;font-weight:800}.admin-modal{position:fixed;inset:0;background:#071b3866;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}.admin-modal-card{width:min(500px,100%);background:#fff;border-radius:18px;padding:28px;box-shadow:0 24px 70px #0003;position:relative}.admin-modal-card h3{font-size:26px;margin:4px 0 18px;color:#071b38}.modal-x{position:absolute;right:16px;top:14px;border:0;background:transparent;font-size:28px;cursor:pointer;color:#536174}.admin-modal-card label{margin:14px 0 5px}.admin-modal-card input{margin-top:6px}.admin-modal-card .admin-check{margin-top:18px}.small-note{font-size:12px;line-height:1.5}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.modal-actions .primary{margin-top:0}.modal-actions .admin-refresh{width:100%}.modal-open{overflow:hidden}@media(max-width:650px){.admin-head{display:block}.admin-actions{margin-top:14px}.admin-actions button{flex:1}.modal-actions{grid-template-columns:1fr}}
+
+.record-tools .check-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.record-tools .check-box{padding:10px 0;font-size:14px;border:1px solid #c9c3b6;background:white;color:#8a8f9b;border-radius:8px}
+.record-tools .check-box.next{border-color:var(--gold);color:var(--navy);box-shadow:0 0 0 2px rgba(182,146,75,.25)}
+.record-tools .check-box.on{background:var(--navy);border-color:var(--navy);color:white}
+.record-tools .check-box.on:disabled{opacity:1}
+.record-tools .check-box:disabled:not(.on){opacity:.5}
