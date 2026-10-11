@@ -37,3 +37,7 @@ header{overflow:hidden}.brand img{max-width:34px!important;max-height:42px!impor
 .hw.no{background:#fbe6e6;color:#b23b3b}
 .hw-none{color:#8a8f9b}
 .hw-legend{display:block;font-weight:600;color:#737986;font-size:11px}
+
+.timeline-item .aud{display:grid;gap:6px}
+.dl-btn{display:inline-block;justify-self:start;padding:6px 12px;border:1px solid #0c1b33;border-radius:8px;background:#fff;color:#0c1b33;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}
+.dl-btn:hover{background:#0c1b33;color:#fff}
