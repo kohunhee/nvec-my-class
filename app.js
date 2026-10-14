@@ -1,7 +1,7 @@
 const cfg=window.NVEC_CONFIG;const sb=supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);const $=s=>document.querySelector(s);let user=null,profile=null,currentCourse=null;
 const adult=[['메인교재 30번 듣기','메인교재를 충분히 듣고 30회 완료를 기록합니다.','listen',30],['메인교재 30번 말하기','30번 반복 연습 후 최종 녹음본을 제출합니다.','recording',30],['교정문장 10번 녹음하기','교정받은 문장을 10번 연습 후 최종 녹음합니다.','recording',10]];
 const teen=[['메인교재 5번 녹음','본문을 소리 내어 5번 녹음합니다.','recording',5],['메인교재 단어 5번 녹음','메인교재 단어 전체를 5번 녹음합니다.','recording',5],['원서 5번 녹음','오늘의 원서를 소리 내어 5번 녹음합니다.','recording',5],['NVOCA 5번 녹음','오늘의 NVOCA를 5번 녹음합니다.','recording',5]];
-function show(id){['loginView','courseView','missionView','adminView'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));$('#logoutBtn').classList.toggle('hidden',id==='loginView')}
+function show(id){['loginView','courseView','missionView','adminView'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));$('#logoutBtn').classList.toggle('hidden',id==='loginView');$('#pwBtn').classList.toggle('hidden',id==='loginView')}
 function emailFor(id){return id.toLowerCase()==='admin'?'rke8096@naver.com':id.toLowerCase()+'@members.nvec.local'}
 $('#loginForm').onsubmit=async e=>{e.preventDefault();$('#loginMsg').textContent='로그인 중...';const id=$('#memberId').value.trim(),password=$('#password').value;const {data,error}=await sb.auth.signInWithPassword({email:emailFor(id),password});if(error){$('#loginMsg').textContent='아이디 또는 비밀번호를 확인해 주세요.';return}user=data.user;const {data:p,error:profileError}=await sb.from('members').select('member_id,name,role,is_active').eq('id',user.id).maybeSingle();if(profileError){$('#loginMsg').textContent='회원정보 조회 오류: '+profileError.message;return}if(!p){$('#loginMsg').textContent='로그인은 성공했지만 회원정보가 연결되지 않았습니다. UID: '+user.id;return}if(!p.is_active){await sb.auth.signOut();$('#loginMsg').textContent='현재 비활성 회원입니다.';return}profile=p;$('#loginMsg').textContent='';if(p.role==='admin'){show('adminView');loadAdmin()}else show('courseView')};
 $('#logoutBtn').onclick=async()=>{await sb.auth.signOut();user=profile=null;show('loginView')};$('#backBtn').onclick=()=>show('courseView');
@@ -20,3 +20,33 @@ function renderAdmin(){const q=($('#adminSearch')?.value||'').trim().toLowerCase
 async function showMember(id,recordingsOnly=false){const m=adminMembers.find(x=>x.id===id),rr=adminRecords.filter(r=>r.user_id===id);let items='';for(const r of rr.slice(0,50)){let audio='';if(r.audio_path){const {data}=await sb.storage.from('recordings').createSignedUrl(r.audio_path,3600);if(data?.signedUrl)audio='<audio controls src="'+data.signedUrl+'"></audio>'}if(!recordingsOnly||r.audio_path)items+='<div class="timeline-item"><b>'+new Date(r.completed_at).toLocaleString('ko-KR')+'</b><span>'+(r.course==='adult'?'성인':'초·중·고')+' · '+r.mission+'</span>'+audio+'</div>'}const d=$('#memberDetail');d.innerHTML='<button class="detail-close">닫기 ×</button><h3>'+m.member_id+' · '+m.name+'</h3><p>최근 학습기록'+(recordingsOnly?' · 녹음파일':'')+'</p><div class="timeline">'+(items||'기록이 없습니다.')+'</div>';d.classList.remove('hidden');d.querySelector('.detail-close').onclick=()=>d.classList.add('hidden');d.scrollIntoView({behavior:'smooth'})}
 function showReport(id){const m=adminMembers.find(x=>x.id===id),now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),1),rr=adminRecords.filter(r=>r.user_id===id&&new Date(r.completed_at)>=start),days=new Set(rr.map(r=>new Date(r.completed_at).toLocaleDateString('ko-KR'))).size,recs=rr.filter(r=>r.record_type==='recording').length;const d=$('#memberDetail');d.innerHTML='<button class="detail-close">닫기 ×</button><h3>'+m.member_id+' · '+m.name+' 월별 성적표</h3><div class="report-cards"><div><span>이번 달 학습일</span><strong>'+days+'일</strong></div><div><span>녹음 저장</span><strong>'+recs+'회</strong></div><div><span>전체 학습기록</span><strong>'+rr.length+'건</strong></div></div>';d.classList.remove('hidden');d.querySelector('.detail-close').onclick=()=>d.classList.add('hidden');d.scrollIntoView({behavior:'smooth'})}
 document.addEventListener('input',e=>{if(e.target?.id==='adminSearch')renderAdmin()});document.addEventListener('change',e=>{if(e.target?.id==='activeOnly')renderAdmin()});document.addEventListener('click',e=>{if(e.target?.id==='adminRefresh')loadAdmin()});
+/* 비밀번호 변경(학생 본인) */
+(function(){
+  const g=x=>document.querySelector(x);
+  if(!g('#pwBtn'))return;
+  const msg=(t,ok)=>{const m=g('#pwMsg');m.textContent=t;m.style.color=ok?'#18794e':'#b23b3b'};
+  const clear=()=>['#pwOld','#pwNew','#pwNew2'].forEach(s=>g(s).value='');
+  const close=()=>{g('#pwModal').classList.add('hidden');document.body.classList.remove('modal-open');clear()};
+  g('#pwBtn').onclick=()=>{msg('');clear();g('#pwModal').classList.remove('hidden');document.body.classList.add('modal-open');g('#pwOld').focus()};
+  g('#pwClose').onclick=close;
+  g('#pwModal').onclick=e=>{if(e.target===g('#pwModal'))close()};
+  g('#pwSave').onclick=async()=>{
+    const o=g('#pwOld').value,n=g('#pwNew').value,n2=g('#pwNew2').value;
+    if(!o||!n||!n2){msg('세 칸을 모두 입력해 주세요.');return}
+    if(n.length<6){msg('새 비밀번호는 6자 이상으로 해 주세요.');return}
+    if(n!==n2){msg('새 비밀번호가 서로 달라요.');return}
+    if(n===o){msg('현재 비밀번호와 다르게 정해 주세요.');return}
+    const email=(user&&user.email)||'';
+    if(!email){msg('다시 로그인한 뒤 시도해 주세요.');return}
+    g('#pwSave').disabled=true;msg('확인 중...',true);
+    try{
+      const a=await sb.auth.signInWithPassword({email,password:o});
+      if(a.error){msg('현재 비밀번호가 맞지 않아요.');return}
+      const b=await sb.auth.updateUser({password:n});
+      if(b.error){msg('변경하지 못했어요: '+b.error.message);return}
+      clear();msg('비밀번호가 변경되었어요. 다음 로그인부터 새 비밀번호를 쓰세요.',true);
+      setTimeout(close,1800);
+    }catch(e){msg('오류: '+(e.message||e))}
+    finally{g('#pwSave').disabled=false}
+  };
+})();
