@@ -110,17 +110,17 @@ function buildReport(o){
   let prevActive=0;
   if(o.prevDays&&o.prevDays.length){const ps=new Set(o.prevDays);prevActive=new Set(all.filter(r=>inSet(r,ps)).map(r=>repKey(new Date(r.completed_at)))).size}
   const len=days.length,H=[];
-  if(active.length>0)H.push(len+'일 중 '+active.length+'일 영어 학습을 했어요.');
+  if(active.length>0)H.push((o.month?o.month+'월 ':'')+len+'일 중 '+active.length+'일 영어 학습을 했어요.');
   if(rec>0)H.push('영어로 '+rec+'번 녹음하며 말하기 연습을 했어요.');
   if(best>=2)H.push(best+'일 연속으로 꾸준히 학습한 기록이 있어요.');
   if(top&&top[1]>=2)H.push('‘'+top[0]+'’ 미션을 가장 열심히 해서 '+top[1]+'번 기록했어요.');
   if(goalDays>0)H.push('하루 미션 목표를 채운 날이 '+goalDays+'일 있었어요.');
-  if(prevActive>0&&active.length>prevActive)H.push('지난 기간보다 학습한 날이 '+(active.length-prevActive)+'일 늘었어요.');
+  if(prevActive>0&&active.length>prevActive)H.push((o.month?'지난달보다':'지난 기간보다')+' 학습한 날이 '+(active.length-prevActive)+'일 늘었어요.');
   let nextGoal;
-  if(active.length===0)nextGoal='다음 '+len+'일은 하루 5분, 한 번의 녹음으로 가볍게 시작해 봐요.';
-  else nextGoal='다음 '+len+'일은 '+Math.min(len,active.length+3)+'일 학습하기에 도전해 봐요.'+(rec>0?' 녹음은 '+(rec+3)+'번을 목표로 해 볼까요?':' 말하기 녹음도 한 번 도전해 봐요.');
+  if(active.length===0)nextGoal=(o.month?'다음 달에는':'다음 '+len+'일은')+' 하루 5분, 한 번의 녹음으로 가볍게 시작해 봐요.';
+  else nextGoal=(o.month?'다음 달에는 ':'다음 '+len+'일은 ')+Math.min(o.month?28:len,active.length+3)+'일 학습하기에 도전해 봐요.'+(rec>0?' 녹음은 '+(rec+3)+'번을 목표로 해 볼까요?':' 말하기 녹음도 한 번 도전해 봐요.');
   const course=recs.length?recs[recs.length-1].course:'';
-  return {len,active:active.length,rec,best,top,goalDays,prevActive,highlights:H,nextGoal,course,calendar:days.map(k=>({k,on:!!byDay[k],n:(byDay[k]||[]).length}))};
+  return {title:(o.month?o.month+'월 학습 이야기':len+'일 학습 이야기'),len,active:active.length,rec,best,top,goalDays,prevActive,highlights:H,nextGoal,course,calendar:days.map(k=>({k,on:!!byDay[k],n:(byDay[k]||[]).length}))};
 }
 function renderReport(name,start,end,r,x){
   x=x||{};
@@ -130,7 +130,7 @@ function renderReport(name,start,end,r,x){
   if(x.att)lines.push('수업에 '+x.att+' 참여했어요.');
   const cal=r.calendar.map(c=>'<span class="rp-d'+(c.on?' on':'')+'" title="'+esc(c.k)+(c.on?' · 기록 '+c.n+'건':'')+'">'+Number(c.k.slice(8))+'</span>').join('');
   return '<div class="rp-sheet"><div class="rp-head"><img src="../67.JPG" alt=""><div><b>NVEC 원어민어학원</b><span>MY CLASS 학습 성적표</span></div></div>'
-  +'<h2 class="rp-title">'+esc(name)+' 학생의 '+r.len+'일 학습 이야기</h2>'
+  +'<h2 class="rp-title">'+esc(name)+' 학생의 '+esc(r.title||(r.len+'일 학습 이야기'))+'</h2>'
   +'<p class="rp-period">'+esc(start)+' ~ '+esc(end)+(courseTxt?' · '+esc(courseTxt):'')+'</p>'
   +'<div class="rp-stats"><div><span>학습한 날</span><b>'+r.active+'일</b></div><div><span>녹음</span><b>'+r.rec+'번</b></div><div><span>최장 연속</span><b>'+r.best+'일</b></div></div>'
   +'<h3>이번 기간의 칭찬 포인트</h3><ul class="rp-list">'+(lines.length?lines.map(l=>'<li>'+esc(l)+'</li>').join(''):'<li>새로운 시작을 응원해요. 다음 기간이 기대돼요.</li>')+'</ul>'
@@ -147,13 +147,24 @@ async function fetchRecs(uid,from,to){
   const g=x=>document.querySelector(x);
   if(!g('#repModal'))return;
   let member=null;
+  const ym=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
   const setRange=(a,b)=>{g('#repStart').value=repKey(a);g('#repEnd').value=repKey(b)};
-  function recent(n){const e=new Date();e.setHours(0,0,0,0);const st=new Date(e);st.setDate(st.getDate()-(n-1));setRange(st,e)}
+  function monthRange(y,m){
+    const first=new Date(y,m,1),last=new Date(y,m+1,0),t=new Date();t.setHours(0,0,0,0);
+    g('#repMonth').value=ym(first);
+    setRange(first,(first.getFullYear()===t.getFullYear()&&first.getMonth()===t.getMonth())?t:last);
+  }
+  function thisMonth(){const n=new Date();monthRange(n.getFullYear(),n.getMonth())}
+  function shiftMonth(k){
+    const v=g('#repMonth').value||ym(new Date());const y=Number(v.slice(0,4)),m=Number(v.slice(5,7))-1;
+    const d=new Date(y,m+k,1);monthRange(d.getFullYear(),d.getMonth());build();
+  }
+  function recent(n){const e=new Date();e.setHours(0,0,0,0);const st=new Date(e);st.setDate(st.getDate()-(n-1));g('#repMonth').value='';setRange(st,e)}
   window.openReport=function(id){
     member=(typeof M!=='undefined'?M:[]).find(m=>m.id===id);if(!member)return;
     g('#repName').textContent=member.name+' ('+member.member_id+')';
     g('#repPart').value='';g('#repAtt').value='';g('#repNote').value='';g('#repView').innerHTML='';g('#repMsg').textContent='';
-    recent(20);g('#repModal').classList.remove('hidden');document.body.classList.add('modal-open');build();
+    thisMonth();g('#repModal').classList.remove('hidden');document.body.classList.add('modal-open');build();
   };
   async function build(){
     if(!member)return;const msg=g('#repMsg');
@@ -162,19 +173,30 @@ async function fetchRecs(uid,from,to){
     const st=new Date(sv+'T00:00:00'),en=new Date(ev+'T00:00:00');
     if(en<st){msg.textContent='끝나는 날이 시작일보다 빨라요.';return}
     const days=repDays(st,en);if(days.length>=62){msg.textContent='기간은 최대 60일까지 만들 수 있어요.';return}
-    const prevEnd=new Date(st);prevEnd.setDate(prevEnd.getDate()-1);const prevStart=new Date(prevEnd);prevStart.setDate(prevStart.getDate()-(days.length-1));
+    const t=new Date();t.setHours(0,0,0,0);
+    const sameMonth=st.getDate()===1&&st.getMonth()===en.getMonth()&&st.getFullYear()===en.getFullYear();
+    const lastDay=new Date(en.getFullYear(),en.getMonth()+1,0).getDate();
+    const isCur=en.getFullYear()===t.getFullYear()&&en.getMonth()===t.getMonth();
+    const monthMode=sameMonth&&(en.getDate()===lastDay||(isCur&&en.getTime()===t.getTime()));
+    let prevStart,prevEnd;
+    if(monthMode){prevStart=new Date(st.getFullYear(),st.getMonth()-1,1);prevEnd=new Date(st.getFullYear(),st.getMonth(),0)}
+    else{prevEnd=new Date(st);prevEnd.setDate(prevEnd.getDate()-1);prevStart=new Date(prevEnd);prevStart.setDate(prevStart.getDate()-(days.length-1))}
     const to=new Date(en);to.setDate(to.getDate()+1);
     msg.style.color='';msg.textContent='불러오는 중...';
     try{
       const all=await fetchRecs(member.id,prevStart,to);
-      const r=buildReport({days,prevDays:repDays(prevStart,prevEnd),all});
+      const r=buildReport({days,prevDays:repDays(prevStart,prevEnd),all,month:monthMode?st.getMonth()+1:0});
       const x={part:g('#repPart').value.trim(),att:g('#repAtt').value.trim(),note:g('#repNote').value.trim()};
       g('#repView').innerHTML=renderReport(member.name,sv,ev,r,x);msg.textContent='';
     }catch(e){msg.style.color='#b23b3b';msg.textContent='불러오지 못했어요: '+(e.message||e)}
   }
   g('#repBuild').onclick=build;
+  g('#repPrevM').onclick=()=>shiftMonth(-1);
+  g('#repNextM').onclick=()=>shiftMonth(1);
+  g('#repMonth').onchange=()=>{const v=g('#repMonth').value;if(!v)return;monthRange(Number(v.slice(0,4)),Number(v.slice(5,7))-1);build()};
   g('#repR20').onclick=()=>{recent(20);build()};
-  g('#repRMonth').onclick=()=>{const n=new Date();setRange(new Date(n.getFullYear(),n.getMonth(),1),new Date(n.getFullYear(),n.getMonth()+1,0));build()};
+  g('#repStart').onchange=()=>{g('#repMonth').value=''};
+  g('#repEnd').onchange=()=>{g('#repMonth').value=''};
   g('#repClose').onclick=()=>{g('#repModal').classList.add('hidden');document.body.classList.remove('modal-open')};
   g('#repModal').onclick=e=>{if(e.target===g('#repModal'))g('#repClose').click()};
   g('#repPrint').onclick=()=>{
