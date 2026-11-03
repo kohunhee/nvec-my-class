@@ -17,7 +17,9 @@
     ],
     /* 성인: 메인교재 30번 말하기 */
     '메인교재 30번 말하기':[
-      {name:'Momentum B',dir:'audio/momentum-b/',items:seq(20,u=>MM.map((n,k)=>['Unit '+u+' · '+n,'u'+pad(u)+'-'+MF[k]+'.mp3'])).flat()}
+      ...[['','momentum-b'],[' 2','momentum-b2'],[' 3','momentum-b3']].map(a=>({name:'Momentum B'+(a[0]||' 1'),dir:'audio/'+a[1]+'/',items:seq(20,u=>MM.map((n,k)=>['Unit '+u+' · '+n,'u'+pad(u)+'-'+MF[k]+'.mp3'])).flat()})),
+      {name:'Toeic Speaking Beginner',dir:'audio/toeic-sb/',items:seq(40,u=>['Unit '+u+' · Reading Practice','u'+pad(u)+'.mp3'])},
+      ...[3,4,5,6,7,8].map(l=>({name:'Topic Talk Level '+l,dir:'audio/topic-'+l+'/',items:seq(60,u=>['Unit '+u,'u'+pad(u)+'.mp3'])}))
     ]
   };
 
@@ -44,6 +46,8 @@
     if(/^Reading Shelf/.test(n))return '#8a4fd0';
     if(/^Talking Time/.test(n))return '#d6455d';
     if(/^Momentum/.test(n))return '#0f8f9e';
+    if(/^Toeic/.test(n))return '#c2410c';
+    if(/^Topic Talk/.test(n))return '#4f46e5';
     return '#0c1b33';
   }
 
@@ -57,7 +61,7 @@
   const BIGBOX=appUrl('https://apps.apple.com/kr/app/id1195456423','woongjin.co.kr.bigbox','https://www.nvoim.com/NP/nvecacademy/Playground/bigbox.asp');
   const TALKIT=appUrl('https://apps.apple.com/app/id1538128263','woongjin.co.kr.studybooster','https://play.google.com/store/apps/details?id=woongjin.co.kr.studybooster');
   const LINKS={
-    '원서 3번 녹음':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 원서(Reading Oceans)를 들은 뒤, 이 화면으로 돌아와 녹음해요.'},
+    '원서 3번 녹음':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 원서(Reading Oceans)를 들은 뒤, 이 화면으로 돌아와 책 제목을 쓰고 녹음해요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
     '메인교재 30번 듣기':{url:TALKIT,label:'🎧 Talkit 앱 열기 (EEA)',note:'Talkit 앱에서 교재를 듣고, 녹음은 아래 "메인교재 30번 말하기"에서 해요.'}
   };
 
@@ -67,6 +71,7 @@
     article.dataset.link='1';
     const box=document.createElement('div');box.className='textbook-pick';
     box.innerHTML='<p class="pick-note">'+info.note+'</p><a class="open-link" href="'+info.url+'" target="_blank" rel="noopener">'+info.label+'</a>';
+    if(info.title){const ti=document.createElement('input');ti.type='text';ti.className='book-title-input';ti.maxLength=100;ti.placeholder=info.title;ti.autocomplete='off';box.appendChild(ti)}
     tools.parentNode.insertBefore(box,tools);
   }
 
