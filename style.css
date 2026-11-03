@@ -64,3 +64,5 @@ header{overflow:hidden}.brand img{max-width:34px!important;max-height:42px!impor
 .crs-badge.adult{background:#e7efff;color:#1d4ed8}
 .crs-badge.teen{background:#e6f6ee;color:#18794e}
 .crs-badge.none{background:#eee;color:#6b7280}
+.textbook-pick{margin:12px 0}.textbook-pick .pick-note{min-height:0;margin:0 0 10px;font-size:13px;color:#6c7280}.textbook-pick select{width:100%;padding:12px;margin:0 0 8px;border:1px solid #d8d8d8;border-radius:9px;font-size:16px;background:#fff}.textbook-pick audio{width:100%;margin-top:4px}
+.textbook-pick .open-link{display:block;text-align:center;padding:13px;border:1px solid var(--navy);border-radius:9px;background:var(--navy);color:#fff;font-weight:800;text-decoration:none}
