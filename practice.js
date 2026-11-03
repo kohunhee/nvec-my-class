@@ -2,13 +2,18 @@
 (function(){
   const pad=n=>String(n).padStart(2,'0');
   const seq=(n,fn)=>Array.from({length:n},(_,i)=>fn(i+1));
-  const tracks=(n)=>seq(n,i=>['Track '+i,'t'+pad(i)+'.mp3']);
+  const tracks=(n,w)=>seq(n,i=>[(w||'Track')+' '+i,'t'+pad(i)+'.mp3']);
   const MM=['Reading','Picture Description','Solution · Opinion'],MF=['reading','picture','opinion'];
   const CATALOG={
     /* 아이들: 메인교재 3번 녹음 */
     '메인교재 3번 녹음':[
-      {name:'Super Easy Reading 1',dir:'audio/ser-1/',items:tracks(49)},
-      {name:'Very Easy Reading 1',dir:'audio/ver-1/',items:tracks(49)}
+      ...[1,2,3].map(k=>({name:'Super Easy Reading '+k,dir:'audio/ser-'+k+'/',items:tracks(49)})),
+      ...[1,2,3,4].map(k=>({name:'Very Easy Reading '+k,dir:'audio/ver-'+k+'/',items:tracks(49)})),
+      ...[1,2,3].map(k=>({name:'School Subject Reading '+k,dir:'audio/ssr-'+k+'/',items:tracks(16)})),
+      ...[1,2,3].map(k=>({name:'Reading Shelf '+k,dir:'audio/rs-'+k+'/',items:tracks(40)}))
+    ],
+    '메인교재 단어 3번 녹음':[
+      ...[1,2,3].map(k=>({name:'Reading Shelf '+k+' 단어',dir:'audio/rsw-'+k+'/',items:tracks(20,'Unit')}))
     ],
     /* 성인: 메인교재 30번 말하기 */
     '메인교재 30번 말하기':[
