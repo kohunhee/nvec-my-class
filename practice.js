@@ -62,7 +62,7 @@
   const TALKIT=appUrl('https://apps.apple.com/app/id1538128263','woongjin.co.kr.studybooster','https://play.google.com/store/apps/details?id=woongjin.co.kr.studybooster');
   const LINKS={
     '어휘녹음 + 원서듣기':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 원서를 들은 뒤, 이 화면으로 돌아와 책 제목을 쓰고 어휘를 녹음해요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
-    '원서 3번 녹음':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 원서(Reading Oceans)를 들은 뒤, 이 화면으로 돌아와 책 제목을 쓰고 녹음해요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
+    '웅진빅박스 리딩오션 원서책 3번 녹음':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 리딩오션 원서를 듣고 읽은 뒤, 이 화면으로 돌아와 3번 녹음하고 책 제목을 채워 주세요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
     '메인교재 20분 말하기':{url:TALKIT,label:'🎧 Talkit 앱 열기 (EEA)',note:'Talkit 앱에서 들어도 되고, 녹음은 이 화면에서 해요.'}
   };
 
@@ -73,7 +73,7 @@
     const box=document.createElement('div');box.className='textbook-pick';
     box.innerHTML='<p class="pick-note">'+info.note+'</p><a class="open-link" href="'+info.url+'" target="_blank" rel="noopener">'+info.label+'</a>';
     if(info.title){const ti=document.createElement('input');ti.type='text';ti.className='book-title-input';ti.maxLength=100;ti.placeholder=info.title;ti.autocomplete='off';box.appendChild(ti)}
-    tools.parentNode.insertBefore(box,tools);
+    const h=article.querySelector('h3');h?h.after(box):tools.parentNode.insertBefore(box,tools);
   }
 
   /* 눈에 띄는 녹음 규칙 안내 상자 */
@@ -100,6 +100,8 @@
 
   function decorate(article){
     ruleBox(article);
+    const gt=article.querySelector('h3');
+    if(gt&&gt.textContent.trim()==='웅진빅박스 리딩오션 원서책 3번 녹음'){const g=article.querySelector('.rec-goal');if(g)g.textContent='원서책 한 문장 × 3번씩 녹음합니다.'}
     const t=article.querySelector('h3');
     if(t&&LINKS[t.textContent.trim()])addLink(article,LINKS[t.textContent.trim()]);
     if(article.dataset.picker)return;
