@@ -102,6 +102,7 @@
     ruleBox(article);
     const gt=article.querySelector('h3');
     if(gt&&gt.textContent.trim()==='웅진빅박스 리딩오션 원서책 3번 녹음'){const g=article.querySelector('.rec-goal');if(g)g.textContent='원서책 한 문장 × 3번씩 녹음합니다.'}
+    if(gt&&gt.textContent.trim()==='NVOCA 3번 녹음'){const g=article.querySelector('.rec-goal');if(g)g.textContent='한 단어 영어 + 뜻 동시에 3번씩 녹음합니다.'}
     const t=article.querySelector('h3');
     if(t&&LINKS[t.textContent.trim()])addLink(article,LINKS[t.textContent.trim()]);
     if(article.dataset.picker)return;
