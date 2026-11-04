@@ -82,7 +82,8 @@
       +'<div class="rule-row"><em>1</em><span><strong>Unit 1부터 배운 과</strong>는 <u>1번씩만</u><br>직청직독 (듣으면서 동시에 녹음)</span></div>'
       +'<div class="rule-row hot"><em>3</em><span><strong>지금 배우는 마지막 Unit 2개</strong>는 <u>각각 3번씩</u><br>직청직독 (듣으면서 동시에 녹음)</span></div>',
     '메인교재 20분 말하기':'<b>📌 오늘의 녹음 방법</b>'
-      +'<div class="rule-row hot"><em class="wide">20분</em><span><strong>한 번에 20분</strong> 직청직독 (듣으면서 동시에 녹음)<br>음원이 끝나면 <u>다음 Unit이 이어서</u> 나와요 · 총 <u>15회</u></span></div>',
+      +'<div class="rule-row hot"><em class="wide">20분</em><span><strong>메인교재 문장 30번 녹음하기</strong><br>총 <u>20분</u></span></div>'
+      +'<div class="rule-row"><em>🎧</em><span><strong>직청직독</strong><br>녹음을 누르고 들으면서 <u>동시에 녹음</u>합니다.</span></div>',
     '메인교재 단어 녹음':'<b>📌 오늘의 녹음 방법</b>'
       +'<div class="rule-row hot"><em class="wide">3~5</em><span><strong>Unit 1 단어부터 배운 Unit까지</strong><br>단어노트를 보고 <u>3~5번씩</u> 소리 내어 녹음</span></div>'
   };
