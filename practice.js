@@ -17,9 +17,9 @@
     ],
     /* 성인: 메인교재 20분 말하기 */
     '메인교재 20분 말하기':[
-      ...[['','momentum-b'],[' 2','momentum-b2'],[' 3','momentum-b3']].map(a=>({name:'Momentum B'+(a[0]||' 1'),dir:'audio/'+a[1]+'/',items:seq(20,u=>MM.map((n,k)=>['Unit '+u+' · '+n,'u'+pad(u)+'-'+MF[k]+'.mp3'])).flat()})),
       {name:'아이캔톡 5회 쉐도잉',dir:'audio/icantalk/',items:seq(20,u=>['Unit '+u+' · 문장마다 5번 반복','u'+pad(u)+'.mp3'])},
       {name:'Toeic Speaking Beginner',dir:'audio/toeic-sb/',items:seq(40,u=>['Unit '+u+' · Reading Practice','u'+pad(u)+'.mp3'])},
+      ...[['','momentum-b'],[' 2','momentum-b2'],[' 3','momentum-b3']].map(a=>({name:'Momentum B'+(a[0]||' 1'),dir:'audio/'+a[1]+'/',items:seq(20,u=>MM.map((n,k)=>['Unit '+u+' · '+n,'u'+pad(u)+'-'+MF[k]+'.mp3'])).flat()})),
       ...[3,4,5,6,7,8].map(l=>({name:'Topic Talk Level '+l,dir:'audio/topic-'+l+'/',items:seq(60,u=>['Unit '+u,'u'+pad(u)+'.mp3'])}))
     ]
   };
@@ -65,6 +65,7 @@
   const LINKS={
     '어휘녹음 + 원서듣기':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 원서를 들은 뒤, 이 화면으로 돌아와 책 제목을 쓰고 어휘를 녹음해요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
     '웅진빅박스 리딩오션 원서책 3번 녹음':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 리딩오션 원서를 듣고 읽은 뒤, 이 화면으로 돌아와 3번 녹음하고 책 제목을 채워 주세요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
+    '원서 귀 트이기 훈련':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 원서를 듣고, 녹음은 이 화면에서 해요.',title:'📖 오늘 들은 책 제목을 써 주세요'},
     '메인교재 20분 말하기':{url:TALKIT,label:'🎧 Talkit 앱 열기 (EEA)',note:'Talkit 앱에서 들어도 되고, 녹음은 이 화면에서 해요.'}
   };
 
@@ -80,13 +81,13 @@
 
   /* 눈에 띄는 녹음 규칙 안내 상자 */
   const RULES={
-    '메인교재 20번 녹음':'<b>📌 오늘의 녹음 방법</b>'
+    '메인교재 20번 녹음':'<b>😊 오늘의 녹음 방법</b>'
       +'<div class="rule-row"><em>1</em><span><strong>Unit 1부터 배운 과</strong>는 <u>1번씩만</u><br>직청직독 (듣으면서 동시에 녹음)</span></div>'
       +'<div class="rule-row hot"><em>3</em><span><strong>지금 배우는 마지막 Unit 2개</strong>는 <u>각각 3번씩</u><br>직청직독 (듣으면서 동시에 녹음)</span></div>',
-    '메인교재 20분 말하기':'<b>📌 오늘의 녹음 방법</b>'
+    '메인교재 20분 말하기':'<b>😊 오늘의 녹음 방법</b>'
       +'<div class="rule-row hot"><em class="wide">20분</em><span><strong>메인교재 문장 30번 녹음하기</strong><br>총 <u>20분</u></span></div>'
       +'<div class="rule-row"><em>🎧</em><span><strong>직청직독</strong><br>녹음을 누르고 들으면서 <u>동시에 녹음</u>합니다.</span></div>',
-    '메인교재 단어 녹음':'<b>📌 오늘의 녹음 방법</b>'
+    '메인교재 단어 녹음':'<b>😊 오늘의 녹음 방법</b>'
       +'<div class="rule-row hot"><em class="wide">3~5</em><span><strong>Unit 1 단어부터 배운 Unit까지</strong><br>단어노트를 보고 <u>3~5번씩</u> 소리 내어 녹음</span></div>'
   };
   function ruleBox(article){
@@ -103,8 +104,9 @@
   function decorate(article){
     ruleBox(article);
     const gt=article.querySelector('h3');
-    if(gt&&gt.textContent.trim()==='웅진빅박스 리딩오션 원서책 3번 녹음'){const g=article.querySelector('.rec-goal');if(g)g.textContent='원서책 한 문장 × 3번씩 녹음합니다.'}
-    if(gt&&gt.textContent.trim()==='NVOCA 3번 녹음'){const g=article.querySelector('.rec-goal');if(g)g.textContent='한 단어 영어 + 뜻 동시에 3번씩 녹음합니다.'}
+    if(gt&&gt.textContent.trim()==='웅진빅박스 리딩오션 원서책 3번 녹음'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent='원서책 한 문장 × 3번씩 녹음합니다.'}
+    if(gt&&gt.textContent.trim()==='원서 귀 트이기 훈련'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent='책 덮고 듣기 2번 → 책 보고 읽기 3번 녹음'}
+    if(gt&&gt.textContent.trim()==='NVOCA 3번 녹음'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent='한 단어 영어 + 뜻 동시에 3번씩 녹음합니다.'}
     const t=article.querySelector('h3');
     if(t&&LINKS[t.textContent.trim()])addLink(article,LINKS[t.textContent.trim()]);
     if(article.dataset.picker)return;
@@ -116,7 +118,7 @@
     const box=document.createElement('div');box.className='textbook-pick';
     box.innerHTML='<p class="pick-note">🎧 이어폰을 끼고, 책을 펴서 음원을 들으며 따라 읽어요.</p>'
       +'<select class="pick-book">'+opt(books.map(b=>b.name))+'</select>'
-      +'<select class="pick-track"></select>'
+      +'<div class="unit-label">👇 유닛을 선택하세요</div><select class="pick-track"></select>'
       +'<audio controls preload="none" class="recording-player"></audio>';
     tools.parentNode.insertBefore(box,tools);
     const sBook=box.querySelector('.pick-book'),sTrack=box.querySelector('.pick-track'),audio=box.querySelector('audio');
@@ -130,7 +132,7 @@
       if(i===0||(!(/^Toeic/.test(bk.name)&&/^아이캔톡/.test(books[i-1].name))&&bk.name.replace(/\s*\d+$/,'')!==books[i-1].name.replace(/\s*\d+$/,'')))c.classList.add('first');
       c.onclick=()=>{sBook.value=i;fillTracks();sync()};chips.appendChild(c);
     });
-    const sync=()=>chips.querySelectorAll('.book-chip').forEach((c,i)=>c.classList.toggle('on',String(i)===sBook.value));
+    const sync=()=>{chips.querySelectorAll('.book-chip').forEach((c,i)=>c.classList.toggle('on',String(i)===sBook.value));box.style.setProperty('--bk',bookColor(books[sBook.value].name))};
     sBook.style.display='none';box.insertBefore(chips,sBook);
     sBook.onchange=()=>{fillTracks();sync()};sTrack.onchange=apply;fillTracks();sync();
     const longRec=title.textContent.trim()==='메인교재 20분 말하기';

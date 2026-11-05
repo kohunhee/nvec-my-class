@@ -87,4 +87,7 @@ header{overflow:hidden}.brand img{max-width:34px!important;max-height:42px!impor
 
 /* 아이들 카드: 녹음 분량 안내를 눈에 띄게 */
 .mission .rec-goal{margin:10px 0;padding:12px;background:#fff7e3;border:2px solid var(--gold);border-radius:12px;font-size:16px;font-weight:900;color:#8a2236;text-align:center}
-.mission .rec-goal::before{content:"📌 ";}
+.mission .rec-goal::before{content:"😊 ";}
+
+.unit-label{font-weight:900;font-size:15px;color:var(--bk,#0c1b33);margin:12px 0 6px}
+.pick-track{width:100%;padding:14px 12px!important;font-size:17px!important;font-weight:800!important;border:3px solid var(--bk,#0c1b33)!important;border-radius:12px!important;color:var(--bk,#0c1b33)!important;background:#fff!important;box-shadow:0 3px 10px rgba(0,0,0,.12)}
