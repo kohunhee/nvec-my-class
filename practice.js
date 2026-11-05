@@ -104,9 +104,9 @@
   function decorate(article){
     ruleBox(article);
     const gt=article.querySelector('h3');
-    if(gt&&gt.textContent.trim()==='웅진빅박스 리딩오션 원서책 3번 녹음'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent='원서책 한 문장 × 3번씩 녹음합니다.'}
-    if(gt&&gt.textContent.trim()==='원서 귀 트이기 훈련'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent='책 덮고 듣기 2번 → 책 보고 읽기 3번 녹음'}
-    if(gt&&gt.textContent.trim()==='NVOCA 3번 녹음'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent='한 단어 영어 + 뜻 동시에 3번씩 녹음합니다.'}
+    if(gt&&gt.textContent.trim()==='웅진빅박스 리딩오션 원서책 3번 녹음'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent='3번 듣기 → 3번 녹음하기'}
+    if(gt&&gt.textContent.trim()==='원서 귀 트이기 훈련'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent='덮고 듣기 2번 → 보며 읽기 3번 녹음'}
+    if(gt&&gt.textContent.trim()==='NVOCA 3번 녹음'){let g=article.querySelector('.rec-goal');if(!g){g=document.createElement('p');g.className='rec-goal';const mp=article.querySelector('.mission-progress');mp?mp.before(g):article.appendChild(g)}g.textContent=(typeof currentCourse!=='undefined'&&currentCourse==='adult')?'영단어 귀로 듣고 따라하기 → 보면서 확인하기':'한 단어 영어 + 뜻 동시에 3번씩 녹음합니다.'}
     const t=article.querySelector('h3');
     if(t&&LINKS[t.textContent.trim()])addLink(article,LINKS[t.textContent.trim()]);
     if(article.dataset.picker)return;
