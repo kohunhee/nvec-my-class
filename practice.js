@@ -18,7 +18,7 @@
     /* 성인: 메인교재 20분 말하기 */
     '메인교재 20분 말하기':[
       ...[['','momentum-b'],[' 2','momentum-b2'],[' 3','momentum-b3']].map(a=>({name:'Momentum B'+(a[0]||' 1'),dir:'audio/'+a[1]+'/',items:seq(20,u=>MM.map((n,k)=>['Unit '+u+' · '+n,'u'+pad(u)+'-'+MF[k]+'.mp3'])).flat()})),
-      {name:'ICanTalk (아이캠톡) 5회 쉐도잉',dir:'audio/icantalk/',items:seq(20,u=>['Unit '+u+' · 문장마다 5번 반복','u'+pad(u)+'.mp3'])},
+      {name:'아이캔톡 5회 쉐도잉',dir:'audio/icantalk/',items:seq(20,u=>['Unit '+u+' · 문장마다 5번 반복','u'+pad(u)+'.mp3'])},
       {name:'Toeic Speaking Beginner',dir:'audio/toeic-sb/',items:seq(40,u=>['Unit '+u+' · Reading Practice','u'+pad(u)+'.mp3'])},
       ...[3,4,5,6,7,8].map(l=>({name:'Topic Talk Level '+l,dir:'audio/topic-'+l+'/',items:seq(60,u=>['Unit '+u,'u'+pad(u)+'.mp3'])}))
     ]
@@ -47,7 +47,7 @@
     if(/^Reading Shelf/.test(n))return '#8a4fd0';
     if(/^Talking Time/.test(n))return '#d6455d';
     if(/^Momentum/.test(n))return '#0f8f9e';
-    if(/^ICanTalk/.test(n))return '#be185d';
+    if(/^아이캔톡/.test(n))return '#be185d';
     if(/^Toeic/.test(n))return '#c2410c';
     if(/^Topic Talk/.test(n))return '#4f46e5';
     return '#0c1b33';
@@ -127,7 +127,7 @@
     books.forEach((bk,i)=>{
       const c=document.createElement('button');c.type='button';c.className='book-chip';c.textContent=bk.name;
       c.style.setProperty('--bk',bookColor(bk.name));
-      if(i===0||(!(/^Toeic/.test(bk.name)&&/^ICanTalk/.test(books[i-1].name))&&bk.name.replace(/\s*\d+$/,'')!==books[i-1].name.replace(/\s*\d+$/,'')))c.classList.add('first');
+      if(i===0||(!(/^Toeic/.test(bk.name)&&/^아이캔톡/.test(books[i-1].name))&&bk.name.replace(/\s*\d+$/,'')!==books[i-1].name.replace(/\s*\d+$/,'')))c.classList.add('first');
       c.onclick=()=>{sBook.value=i;fillTracks();sync()};chips.appendChild(c);
     });
     const sync=()=>chips.querySelectorAll('.book-chip').forEach((c,i)=>c.classList.toggle('on',String(i)===sBook.value));
