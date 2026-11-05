@@ -64,7 +64,7 @@
   const TALKIT=appUrl('https://apps.apple.com/app/id1538128263','woongjin.co.kr.studybooster','https://play.google.com/store/apps/details?id=woongjin.co.kr.studybooster');
   const LINKS={
     '어휘녹음 + 원서듣기':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 원서를 들은 뒤, 이 화면으로 돌아와 책 제목을 쓰고 어휘를 녹음해요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
-    '웅진빅박스 리딩오션 원서책 3번 녹음':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 리딩오션 원서를 듣고 읽은 뒤, 이 화면으로 돌아와 3번 녹음하고 책 제목을 채워 주세요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
+    '웅진빅박스 리딩오션 원서책 3번 녹음':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 리딩오션 원서를 3번 듣고, 이 화면으로 돌아와 3번 녹음한 뒤 책 제목을 채워 주세요.',title:'📖 오늘 읽은 책 제목을 써 주세요'},
     '원서 귀 트이기 훈련':{url:BIGBOX,label:'📚 웅진 빅박스 앱 열기',note:'빅박스 앱에서 원서를 듣고, 녹음은 이 화면에서 해요.',title:'📖 오늘 들은 책 제목을 써 주세요'},
     '메인교재 20분 말하기':{url:TALKIT,label:'🎧 Talkit 앱 열기 (EEA)',note:'Talkit 앱에서 들어도 되고, 녹음은 이 화면에서 해요.'}
   };
