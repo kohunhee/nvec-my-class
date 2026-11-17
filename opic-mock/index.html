@@ -102,6 +102,9 @@ button{font-family:inherit;cursor:pointer}
   <label class="f">이름</label>
   <input type="text" id="name" placeholder="이름을 적어 주세요">
 
+  <label class="f">나이</label>
+  <input type="text" id="age" inputmode="numeric" maxlength="3" placeholder="예: 25" style="max-width:140px">
+
   <label class="f">내 목표 등급</label>
   <div class="chips lv" id="levels"></div>
   <p class="muted" id="lvHelp"></p>
@@ -451,7 +454,7 @@ for (const k in SURVEY){
 }
 function refresh(){
   const need=[];
-  if(!$("name").value.trim()) need.push("이름");
+  if(!$("name").value.trim()) need.push("이름"); if(!/^\d{1,3}$/.test($("age").value.trim())) need.push("나이");
   if(!level) need.push("목표 등급");
   if(picked.length!==2) need.push("주제 2개");
   $("startBtn").disabled = need.length>0;
@@ -465,6 +468,7 @@ tp.addEventListener("change",e=>{
   refresh();
 });
 $("name").addEventListener("input",refresh);
+$("age").addEventListener("input",refresh);
 refresh();
 
 /* ───────── 시험지 만들기 ───────── */
@@ -738,7 +742,7 @@ function finish(){
   $("s-exam").classList.add("hidden");
   $("s-result").classList.remove("hidden");
   const tot = answers.reduce((s,a)=>s+a.sec,0);
-  $("sum").textContent = `${$("name").value.trim()}님 · 목표 ${grade} · ${exam.length}문제 · 총 말한 시간 ${Math.floor(tot/60)}분 ${tot%60}초`;
+  $("sum").textContent = `${$("name").value.trim()}님(${$("age").value.trim()}세) · 목표 ${grade} · ${exam.length}문제 · 총 말한 시간 ${Math.floor(tot/60)}분 ${tot%60}초`;
   const esc = s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
   const scored = answers.slice(1);                     // 1번 자기소개는 실제 시험처럼 점수에서 제외
   const stats = scored.map(a=>analyze(a.text,a.sec));
