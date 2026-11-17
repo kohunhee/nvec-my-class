@@ -253,6 +253,7 @@ button{font-family:inherit;cursor:pointer}
   </div>
   <p class="muted" id="hint" style="text-align:center"></p>
   <button class="skip hidden" id="skipBtn">준비 건너뛰고 바로 말하기</button>
+  <div class="row" style="justify-content:center;gap:8px;margin-top:12px"><button class="skip" id="pauseBtn">⏸ 일시정지</button><button class="skip" id="quitBtn" style="border-color:#c0392b;color:#c0392b">■ 시험 그만두기</button></div>
 </section>
 
 <!-- 3. 결과 -->
@@ -515,7 +516,8 @@ function readAccuracy(orig,heard){
 const sleep = ms=>new Promise(r=>setTimeout(r,ms));
 function sayP(text){
   return new Promise(res=>{
-    let done=false; const f=()=>{if(!done){done=true;res();}};
+    let done=false; const f=()=>{if(!done){done=true;pendSay=null;res();}};
+    pendSay=f; if(aborted){ f(); return; }
     say(text,f); setTimeout(f, 60000);
   });
 }
@@ -571,6 +573,7 @@ $("sampleDone").onclick=()=>{
 
 /* ───────── 시험 진행 ───────── */
 let exam=[], answers=[], skipNow=null;
+let paused=false, aborted=false, finished=false, pausedMs=0, pauseT=0, pendSay=null, curRec=null, keepHeard="", wasRec=false;
 function countdown(sec,cls,skippable){
   return new Promise(res=>{
     let left=sec; const bar=$("pbar");
@@ -578,11 +581,11 @@ function countdown(sec,cls,skippable){
     draw();
     $("skipBtn").classList.toggle("hidden",!skippable);
     const end=()=>{ clearInterval(iv); skipNow=null; $("skipBtn").classList.add("hidden"); res(); };
-    const iv=setInterval(()=>{ left--; draw(); if(left<=0) end(); },1000);
+    const iv=setInterval(()=>{ if(aborted){ end(); return; } if(paused) return; left--; draw(); if(left<=0) end(); },1000);
     skipNow=skippable?end:null;
   });
 }
-$("skipBtn").onclick=()=>{ if(skipNow) skipNow(); };
+$("skipBtn").onclick=()=>{ if(skipNow&&!paused) skipNow(); };
 function setStage(txt,cls){ const s=$("stage"); s.textContent=txt; s.className="stage "+(cls||""); $("count").textContent=""; $("pbar").style.width="0"; }
 function render(t){
   let h="";
@@ -594,24 +597,26 @@ function render(t){
 }
 function recordFor(t){
   return new Promise(async res=>{
-    const chunks=[]; const rec=new MediaRecorder(stream);
+    const chunks=[]; const rec=new MediaRecorder(stream); curRec=rec; pausedMs=0;
     rec.ondataavailable=e=>chunks.push(e.data);
     const t0=Date.now();
     rec.onstop=async()=>{
       await stopSR();
       const blob=new Blob(chunks,{type:rec.mimeType||"audio/webm"});
-      answers.push({t,blob,url:URL.createObjectURL(blob),sec:Math.round((Date.now()-t0)/1000),text:heard.trim()});
+      answers.push({t,blob,url:URL.createObjectURL(blob),sec:Math.max(0,Math.round((Date.now()-t0-pausedMs)/1000)),text:heard.trim()});
       res();
     };
     rec.start(); startSR();
     $("recInd").classList.remove("hidden");
     await countdown(t.speak,"speak",false);
     $("recInd").classList.add("hidden");
-    if(rec.state==="recording") rec.stop();
+    if(rec.state!=="inactive") rec.stop();
   });
 }
 async function runExam(){
   exam=build(); answers=[];
+  const A=()=>{ if(aborted) throw "abort"; };
+  try{
   for(let i=0;i<exam.length;i++){
     const t=exam[i];
     $("qno").textContent=`QUESTION ${t.no} / 11`;
@@ -621,37 +626,40 @@ async function runExam(){
     if(t.dir||t.intro){
       $("taskArea").innerHTML="";
       setStage("Directions","listen"); $("hint").textContent="Ava의 안내를 들으세요.";
-      if(t.dir) await sayP(t.dir);
-      if(t.intro) await sayP(t.intro);
+      if(t.dir) await sayP(t.dir); A();
+      if(t.intro) await sayP(t.intro); A();
     }
     render(t);
     if(t.read){
       setStage("읽는 시간","");
-      await sayP(CUE_READ); beep();
+      await sayP(CUE_READ); A(); beep();
       $("hint").textContent="표를 잘 읽어 두세요. 질문이 이어서 나옵니다.";
-      await countdown(t.read,"",true);
+      await countdown(t.read,"",true); A();
     }
     if(t.prompt){
       setStage("Listen","listen"); $("hint").textContent="질문을 잘 들으세요.";
-      await sayP(t.prompt);
-      if(t.twice){ await sleep(700); await sayP(t.prompt); }
+      await sayP(t.prompt); A();
+      if(t.twice){ await sleep(700); await sayP(t.prompt); A(); }
     }
     if(t.prep){
       setStage("준비 시간","");
-      await sayP(CUE_PREP); beep();
+      await sayP(CUE_PREP); A(); beep();
       $("hint").textContent="말할 내용을 머릿속으로 정리하세요.";
-      await countdown(t.prep,"",true);
+      await countdown(t.prep,"",true); A();
     }
     setStage("말하기","speak");
-    await sayP(CUE_SPEAK); beep(1100);
+    await sayP(CUE_SPEAK); A(); beep(1100);
     $("hint").textContent="영어로 말하세요. 시간이 되면 저절로 넘어가요.";
     await recordFor(t);
+    A();
   }
+  }catch(e){ if(e!=="abort") throw e; }
   finish();
 }
 
 /* ───────── 결과 ───────── */
 function finish(){
+  if(finished) return; finished=true;
   stream.getTracks().forEach(t=>t.stop());
   $("s-exam").classList.add("hidden"); $("s-result").classList.remove("hidden");
   const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
@@ -706,6 +714,29 @@ function finish(){
       <div class="muted" style="margin-top:6px">${prompt}</div>${pic}${info}<audio controls src="${a.url}"></audio></div>`;
   }).join("");
 }
+$("pauseBtn").onclick=()=>{
+  if(aborted) return;
+  if(!paused){
+    paused=true; pauseT=Date.now(); $("pauseBtn").textContent="▶ 계속하기";
+    wasRec = !!(curRec && curRec.state==="recording");
+    if(wasRec){ curRec.pause(); keepHeard=heard; abortSR(); }
+    if(curAudio) curAudio.pause(); try{speechSynthesis.pause();}catch(_){}
+    $("hint").dataset.keep=$("hint").textContent; $("hint").textContent="일시정지 중입니다. '계속하기'를 누르면 이어져요.";
+  }else{
+    paused=false; pausedMs+=Date.now()-pauseT; $("pauseBtn").textContent="⏸ 일시정지";
+    if(wasRec && curRec && curRec.state==="paused"){ curRec.resume(); startSR(); heard=keepHeard; }
+    if(curAudio) curAudio.play().catch(()=>{}); try{speechSynthesis.resume();}catch(_){}
+    $("hint").textContent=$("hint").dataset.keep||"";
+  }
+};
+$("quitBtn").onclick=()=>{
+  if(!confirm("시험을 그만둘까요? 지금까지 한 답만 채점해요.")) return;
+  aborted=true; paused=false;
+  stopSay(); try{speechSynthesis.cancel();}catch(_){}
+  if(pendSay) pendSay();
+  if(skipNow) skipNow();
+  if(curRec && curRec.state!=="inactive") curRec.stop();
+};
 $("againBtn").onclick=()=>location.reload();
 speechSynthesis.getVoices();
 speechSynthesis.onvoiceschanged = fillVoices;
