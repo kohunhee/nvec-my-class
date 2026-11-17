@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>오픽·토스 관리 · NVEC ADMIN</title>
+<style>
+:root{--navy:#0c1b33;--gold:#b6924b;--line:#e6e0d5}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;background:#f5f3ee;color:#172033}
+header{background:var(--navy);color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+header b{font-size:18px}header a{color:#d7c49c;font-size:14px;text-decoration:none}
+main{max-width:960px;margin:auto;padding:24px 16px 70px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px}
+h1{font-size:22px;margin:0 0 8px}h2{font-size:18px;margin:0 0 10px}
+.muted{color:#6c7280;font-size:14px;line-height:1.6}
+button,.btn{font-family:inherit;cursor:pointer;border:0;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:15px;padding:12px 18px;text-decoration:none;display:inline-block}
+button.sec{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{padding:8px 10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+th{background:#faf7f0;white-space:nowrap}
+.hidden{display:none!important}
+.msg{margin-top:10px;font-weight:700}
+details{margin:2px 0}
+pre{white-space:pre-wrap;font-size:13px;background:#faf7f0;padding:10px;border-radius:8px;margin:6px 0}
+</style>
+</head>
+<body>
+<header><b>오픽·토스 관리</b><a href="./">← 관리자 화면으로</a></header>
+<main>
+<section id="lock" class="panel">
+  <h1>🔒 관리자 확인 중…</h1>
+  <p class="muted" id="lockMsg">잠시만 기다려 주세요.</p>
+  <p class="muted">관리자 화면(<a href="./">/admin/</a>)에서 먼저 로그인한 뒤, 같은 브라우저에서 이 페이지를 열어 주세요.</p>
+</section>
+
+<div id="app" class="hidden">
+  <section class="panel">
+    <h2>📄 문제 내려받기</h2>
+    <p class="muted">오픽·토스 모의시험에 들어 있는 문제 전체를 글 파일(.txt)로 받아요. 3개월마다 문제를 바꿀 때 지난 문제를 보관하거나 인쇄해서 쓸 수 있어요.</p>
+    <div class="row">
+      <button id="dlOpic">오픽 문제 전체 받기 (.txt)</button>
+      <button id="dlToeic">토스 문제 전체 받기 (.txt)</button>
+    </div>
+    <p class="msg" id="qMsg"></p>
+  </section>
+
+  <section class="panel">
+    <h2>📊 학생 시험 결과</h2>
+    <p class="muted">학생이 오픽·토스 시험을 마치면(또는 중간에 그만두면) 자동으로 저장돼요. 최근 500건까지 보여요.</p>
+    <div class="row">
+      <button class="sec" id="reload">새로고침</button>
+      <button id="dlCsv" disabled>결과 엑셀(CSV)로 받기</button>
+      <button id="dlTxt" class="sec" disabled>결과 글 파일(.txt)로 받기</button>
+    </div>
+    <p class="msg" id="rMsg"></p>
+    <div style="overflow-x:auto"><table id="tbl" class="hidden"><thead><tr><th>날짜</th><th>이름</th><th>나이</th><th>시험</th><th>목표</th><th>끝까지</th><th>예상 참고</th><th>자세히</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </section>
+</div>
+</main>
+
+<iframe id="fo" class="hidden" title="opic"></iframe>
+<iframe id="ft" class="hidden" title="toeic"></iframe>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../config.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const cfg=window.NVEC_CONFIG, sb=supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+function save(name,text){
+  const b=new Blob(["﻿"+text],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ───── 관리자 확인 ───── */
+(async()=>{
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session){ $("lockMsg").textContent="관리자 로그인이 필요해요."; return; }
+    const {data:p}=await sb.from("members").select("role,is_active").eq("id",session.user.id).maybeSingle();
+    if(!p||p.role!=="admin"||!p.is_active){ $("lockMsg").textContent="관리자만 사용할 수 있어요."; return; }
+    $("lock").classList.add("hidden"); $("app").classList.remove("hidden");
+    loadResults();
+  }catch(e){ $("lockMsg").textContent="확인 중 문제가 생겼어요. 새로고침(Ctrl+F5)해 주세요."; }
+})();
+
+/* ───── 문제 내려받기: 모의시험 페이지에서 문제를 읽어와요 ───── */
+function loadFrame(id,src){
+  return new Promise((res,rej)=>{
+    const f=$(id); f.onload=()=>{ try{ res(f.contentWindow); }catch(e){ rej(e); } };
+    f.onerror=()=>rej(new Error("불러오지 못했어요")); f.src=src+"?t="+Date.now();
+  });
+}
+const G=(w,n)=>w.eval(n);
+function opicText(w){
+  const SURVEY=G(w,"SURVEY"),SURPRISE=G(w,"SURPRISE"),ROLEPLAY=G(w,"ROLEPLAY"),ADVANCED=G(w,"ADVANCED");
+  let t=`NVEC OPIc 모의시험 문제은행\n내려받은 날: ${today()}\n\n`;
+  const grp=(title,list)=>{ t+=`■ ${title}\n`; list.forEach(o=>{ t+=`\n[${o.n}]\n`; o.q.forEach((q,i)=>t+=`  ${i+1}. ${q}\n`); }); t+="\n"; };
+  grp("서베이 주제",Object.values(SURVEY)); grp("돌발 주제",Object.values(SURPRISE)); grp("롤플레이",ROLEPLAY);
+  t+="■ 비교·의견 (IH·AL용)\n"; ADVANCED.forEach((q,i)=>t+=`  ${i+1}. ${q}\n`);
+  const n=Object.values(SURVEY).concat(Object.values(SURPRISE),ROLEPLAY).reduce((s,o)=>s+o.q.length,0)+ADVANCED.length;
+  return t+`\n총 ${n}문제\n`;
+}
+function toeicText(w){
+  const READ=G(w,"READ"),SCENES=G(w,"SCENES"),RESP=G(w,"RESP"),INFO=G(w,"INFO"),OPINION=G(w,"OPINION");
+  let t=`NVEC TOEIC Speaking 모의시험 문제은행\n내려받은 날: ${today()}\n\n■ 1~2번 글 읽기 (${READ.length}개)\n`;
+  READ.forEach((x,i)=>t+=`\n  ${i+1}. ${x}\n`);
+  t+=`\n■ 3~4번 사진 설명 (${SCENES.length}장)\n`;
+  SCENES.forEach((s,i)=>t+=`  ${i+1}. ${s.key} · 말하면 좋은 단어: ${s.words.map(g=>g[0]).join(", ")}\n`);
+  t+=`\n■ 5~7번 질문 대답 (${RESP.length}세트)\n`;
+  RESP.forEach(o=>{ t+=`\n[${o.topic}] ${o.intro}\n`; o.q.forEach((q,i)=>t+=`  ${5+i}. ${q}\n`); });
+  t+=`\n■ 8~10번 표 보고 대답 (${INFO.length}종)\n`;
+  INFO.forEach(o=>{ t+=`\n[${o.title}]\n`; o.rows.forEach(r=>t+=`   ${r[0]}  |  ${r[1]}\n`); o.q.forEach((q,i)=>t+=`  ${8+i}. ${q}\n`); });
+  t+=`\n■ 11번 의견 말하기 (${OPINION.length}개)\n`; OPINION.forEach((q,i)=>t+=`  ${i+1}. ${q}\n`);
+  return t;
+}
+async function dlQ(which){
+  $("qMsg").style.color="#172033"; $("qMsg").textContent="문제를 읽어오는 중…";
+  try{
+    const w=await loadFrame(which==="opic"?"fo":"ft", which==="opic"?"../opic-mock/index.html":"../toeic-mock/index.html");
+    save(which==="opic"?`OPIc-문제은행-${today()}.txt`:`TOEIC-Speaking-문제은행-${today()}.txt`, which==="opic"?opicText(w):toeicText(w));
+    $("qMsg").style.color="#18794e"; $("qMsg").textContent="내려받았어요. 다운로드 폴더를 확인해 주세요.";
+  }catch(e){ $("qMsg").style.color="#b23b3b"; $("qMsg").textContent="문제를 읽어오지 못했어요: "+(e.message||e); }
+}
+$("dlOpic").onclick=()=>dlQ("opic"); $("dlToeic").onclick=()=>dlQ("toeic");
+
+/* ───── 학생 시험 결과 ───── */
+let RES=[];
+async function loadResults(){
+  $("rMsg").style.color="#172033"; $("rMsg").textContent="불러오는 중…";
+  const {data,error}=await sb.from("mock_results").select("*").order("created_at",{ascending:false}).limit(500);
+  if(error){
+    $("rMsg").style.color="#b23b3b";
+    $("rMsg").textContent="결과 표가 아직 없어요. 안내서의 '9번 SQL'을 Supabase에서 한 번 실행해 주세요. ("+error.message+")";
+    $("tbl").classList.add("hidden"); $("dlCsv").disabled=$("dlTxt").disabled=true; return;
+  }
+  RES=data||[];
+  $("rMsg").textContent=RES.length?`${RES.length}건`:"아직 저장된 결과가 없어요.";
+  $("dlCsv").disabled=$("dlTxt").disabled=!RES.length;
+  $("tbl").classList.toggle("hidden",!RES.length);
+  $("rows").innerHTML=RES.map((r,i)=>{
+    const ans=((r.detail||{}).answers||[]).map(a=>`${a.n}번 · ${a.sec}초 · ${a.words}단어\n${a.text||""}`).join("\n\n");
+    return `<tr><td>${esc(new Date(r.created_at).toLocaleString("ko-KR"))}</td><td>${esc(r.member_name)}</td><td>${esc(r.age??"")}</td><td>${r.exam==="opic"?"오픽":"토스"}</td><td>${esc(r.goal||"")}</td><td>${r.completed?"✅":"중간에 그만둠"}</td><td>${esc(r.est_grade||"")}${r.est_score?" · "+r.est_score+"점":""}</td><td><details><summary>보기</summary><pre>${esc(ans)||"내용 없음"}</pre></details></td></tr>`;
+  }).join("");
+}
+$("reload").onclick=loadResults;
+const csvCell=v=>{ v=String(v??""); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+$("dlCsv").onclick=()=>{
+  const head=["날짜","이름","나이","시험","목표","끝까지","예상등급","예상점수"];
+  const lines=[head.join(",")].concat(RES.map(r=>[new Date(r.created_at).toLocaleString("ko-KR"),r.member_name,r.age,r.exam==="opic"?"오픽":"토스",r.goal,r.completed?"예":"중간에 그만둠",r.est_grade,r.est_score].map(csvCell).join(",")));
+  save(`모의시험-결과-${today()}.csv`,lines.join("\r\n"));
+};
+$("dlTxt").onclick=()=>{
+  save(`모의시험-결과-${today()}.txt`, RES.map(r=>{
+    const ans=((r.detail||{}).answers||[]).map(a=>`  ${a.n}번 (${a.sec}초, ${a.words}단어) ${a.text||""}`).join("\n");
+    return `[${new Date(r.created_at).toLocaleString("ko-KR")}] ${r.member_name||""} (${r.age??""}세) · ${r.exam==="opic"?"오픽":"토스"} · 목표 ${r.goal||""} · ${r.completed?"끝까지":"중간에 그만둠"} · 예상 ${r.est_grade||""}${r.est_score?" "+r.est_score+"점":""}\n${ans}\n`;
+  }).join("\n"));
+};
+</script>
+</body>
+</html>

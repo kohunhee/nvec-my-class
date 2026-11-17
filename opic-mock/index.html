@@ -121,6 +121,7 @@ button{font-family:inherit;cursor:pointer}
 
   <button class="big" id="startBtn" disabled>시험 시작</button>
   <div class="warn" style="margin-top:16px"><b>주의사항</b> · 모든 테스트를 끝까지 마친 수험생만, 문제가 열립니다. (중간에 그만두면 열리지 않아요)</div>
+  <div class="warn" style="margin-top:12px">※ 시험 결과(점수와 말한 내용)는 학원 선생님이 볼 수 있도록 저장됩니다.</div>
   <div id="allqSetup" class="hidden"></div>
 </section>
 
@@ -490,8 +491,18 @@ function showAllQ(id){
   box.innerHTML='<details class="allq" style="margin-top:18px"><summary style="cursor:pointer;font-weight:800;padding:12px;border:2px solid var(--navy);border-radius:10px;text-align:center">📚 전체 문제 보기 <span style="font-weight:400;font-size:12px">(시험을 마친 회원만 볼 수 있어요)</span></summary><div style="margin-top:12px;font-size:14px;line-height:1.6">'+allQHtml()+'</div></details>';
   box.classList.remove("hidden");
 }
-function afterFinish(){
-  if(quitting) return;                              // 중간에 그만둔 사람은 제외
+async function saveResult(done){
+  try{
+    if(!window.__sb||!window.__uid) return false;
+    const rows=answers.map((a,i)=>({n:i+1,type:a.q.type,topic:a.q.topic||"",q:a.q.text,sec:a.sec,words:analyze(a.text,a.sec).n,text:a.text}));
+    const {error}=await window.__sb.from("mock_results").insert({user_id:window.__uid,exam:"opic",member_name:$("name").value.trim(),age:parseInt($("age").value,10)||null,goal:grade,completed:done,est_grade:(window.__res||{}).est||null,est_score:null,detail:{answers:rows}});
+    return !error;
+  }catch(_){ return false; }
+}
+async function afterFinish(){
+  const done=!quitting;
+  saveResult(done).then(ok=>{ if(ok) $("sum").insertAdjacentHTML("afterend",'<p class="muted">✅ 결과가 학원에 저장됐어요.</p>'); });
+  if(!done) return;                                 // 중간에 그만둔 사람은 문제 목록 제외
   try{ localStorage.setItem("opicDone","1"); }catch(_){}
   showAllQ("allqRes");
 }
@@ -795,6 +806,7 @@ function finish(){
     if(sum("conn")/cnt<4) tips.push("because, but, so, for example 같은 연결어를 더 써 보세요.");
     if(sum("long")/sum("n")<0.12) tips.push("조금 더 다양한 단어(7글자 이상)를 써 보세요.");
     if(wpm && wpm<90) tips.push("말이 느린 편이에요. 중간에 오래 멈추지 않도록 연습해 보세요.");
+    window.__res={est:estimateGrade(avgW)};
     top = `<div class="warn" style="margin:14px 0">
       <b>예상 참고 등급: ${estimateGrade(avgW)}</b> (목표: ${grade})<br>
       문제당 평균 ${avgW}단어 · 분당 ${wpm}단어 · 연결어 평균 ${(sum("conn")/cnt).toFixed(1)}개<br>
@@ -853,6 +865,7 @@ $("voiceSel").addEventListener("change",e=>{
     if(!session){ lock("회원 로그인이 필요해요."); return; }
     const {data:p}=await sb.from("members").select("name,is_active").eq("id",session.user.id).maybeSingle();
     if(!p||!p.is_active){ lock("등록된 회원만 사용할 수 있어요. 학원에 문의해 주세요."); return; }
+    window.__sb=sb; window.__uid=session.user.id;
     gate.classList.add("hidden");
     $("app").classList.remove("hidden");
     $("name").value=p.name||""; refresh();
