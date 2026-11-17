@@ -120,6 +120,8 @@ button{font-family:inherit;cursor:pointer}
   </div>
 
   <button class="big" id="startBtn" disabled>시험 시작</button>
+  <div class="warn" style="margin-top:16px"><b>주의사항</b> · 모든 테스트를 끝까지 마친 수험생만, 문제가 열립니다. (중간에 그만두면 열리지 않아요)</div>
+  <div id="allqSetup" class="hidden"></div>
 </section>
 
 <!-- 1.5 시험장 안내 (오리엔테이션) -->
@@ -256,6 +258,7 @@ button{font-family:inherit;cursor:pointer}
   <h1>시험 끝! 수고하셨어요 👏</h1>
   <p class="muted" id="sum"></p>
   <div id="results"></div>
+  <div id="allqRes" class="hidden"></div>
   <button class="big" id="againBtn">다시 하기</button>
 </section>
 
@@ -472,6 +475,27 @@ $("name").addEventListener("input",refresh);
 $("age").addEventListener("input",refresh);
 refresh();
 
+/* ───────── 전체 문제 보기 ───────── */
+(function(){
+  const h=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  const grp=(title,obj)=>`<h3 style="margin:16px 0 6px">${title}</h3>`+Object.values(obj).map(o=>`<details style="margin:4px 0"><summary><b>${h(o.n)}</b></summary><ol style="margin:6px 0 6px 18px;padding:0">${o.q.map(q=>"<li>"+h(q)+"</li>").join("")}</ol></details>`).join("");
+  const rp=`<h3 style="margin:16px 0 6px">롤플레이</h3>`+ROLEPLAY.map(o=>`<details style="margin:4px 0"><summary><b>${h(o.n)}</b></summary><ol style="margin:6px 0 6px 18px;padding:0">${o.q.map(q=>"<li>"+h(q)+"</li>").join("")}</ol></details>`).join("");
+  const adv=`<h3 style="margin:16px 0 6px">비교·의견 (IH·AL)</h3><ol style="margin:6px 0 6px 18px;padding:0">${ADVANCED.map(q=>"<li>"+h(q)+"</li>").join("")}</ol>`;
+  const n=Object.values(SURVEY).concat(Object.values(SURPRISE),ROLEPLAY).reduce((s,o)=>s+o.q.length,0)+ADVANCED.length;
+  window.allQHtml=()=>`<p class="muted">문제는 모두 ${n}개예요. 주제를 눌러 펼쳐 보세요. 문제은행은 3개월마다 새로 바꿉니다.</p>`+grp("서베이 주제 (내가 고르는 2개)",SURVEY)+grp("돌발 주제",SURPRISE)+rp+adv;
+})();
+
+function showAllQ(id){
+  const box=$(id);
+  box.innerHTML='<details class="allq" style="margin-top:18px"><summary style="cursor:pointer;font-weight:800;padding:12px;border:2px solid var(--navy);border-radius:10px;text-align:center">📚 전체 문제 보기 <span style="font-weight:400;font-size:12px">(시험을 마친 회원만 볼 수 있어요)</span></summary><div style="margin-top:12px;font-size:14px;line-height:1.6">'+allQHtml()+'</div></details>';
+  box.classList.remove("hidden");
+}
+function afterFinish(){
+  if(quitting) return;                              // 중간에 그만둔 사람은 제외
+  try{ localStorage.setItem("opicDone","1"); }catch(_){}
+  showAllQ("allqRes");
+}
+try{ if(localStorage.getItem("opicDone")) showAllQ("allqSetup"); }catch(_){}
 /* ───────── 시험지 만들기 ───────── */
 const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
 function build(){
@@ -743,7 +767,7 @@ $("nextBtn").onclick = ()=>{
 };
 
 function finish(){
-  if(finished) return; finished=true;
+  if(finished) return; finished=true; setTimeout(afterFinish,0);
   stream.getTracks().forEach(t=>t.stop());
   $("s-exam").classList.add("hidden");
   $("s-result").classList.remove("hidden");

@@ -127,6 +127,8 @@ button{font-family:inherit;cursor:pointer}
   <p class="muted" id="lvHelp"></p>
 
   <button class="big" id="startBtn" disabled>시험 시작</button>
+  <div class="warn" style="margin-top:16px"><b>주의사항</b> · 모든 테스트를 끝까지 마친 수험생만, 문제가 열립니다. (중간에 그만두면 열리지 않아요)</div>
+  <div id="allqSetup" class="hidden"></div>
   <p class="muted" style="margin-top:14px">※ 이 모의시험의 문제는 학원에서 새로 만든 연습용입니다. 실제 TOEIC Speaking 시험 문제가 아니며, 시간과 형식은 실제와 조금 다를 수 있어요.</p>
 </section>
 
@@ -261,6 +263,7 @@ button{font-family:inherit;cursor:pointer}
   <h1>시험 끝! 수고하셨어요 👏</h1>
   <p class="muted" id="sum"></p>
   <div id="results"></div>
+  <div id="allqRes" class="hidden"></div>
   <button class="big" id="againBtn">다시 하기</button>
 </section>
 
@@ -394,6 +397,30 @@ $("name").addEventListener("input",refresh);
 $("age").addEventListener("input",refresh);
 refresh();
 
+/* ───────── 전체 문제 보기 ───────── */
+(function(){
+  const h=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  const ol=a=>`<ol style="margin:6px 0 6px 18px;padding:0">${a.map(q=>"<li>"+h(q)+"</li>").join("")}</ol>`;
+  const T=t=>`<h3 style="margin:16px 0 6px">${t}</h3>`;
+  const rd=T("1~2번 · 글 읽기 ("+READ.length+"개)")+ol(READ);
+  const pic=T("3~4번 · 사진 설명 ("+SCENES.length+"장)")+`<div style="display:flex;flex-wrap:wrap;gap:8px">${SCENES.map(s=>`<div class="picBox" style="width:46%;margin:0">${s.svg}</div>`).join("")}</div>`;
+  const rs=T("5~7번 · 질문 대답 ("+RESP.length+"세트)")+RESP.map(o=>`<details style="margin:4px 0"><summary><b>${h(o.topic)}</b></summary><p class="muted" style="margin:4px 0">${h(o.intro)}</p>${ol(o.q)}</details>`).join("");
+  const inf=T("8~10번 · 표 보고 대답 ("+INFO.length+"종)")+INFO.map(o=>`<details style="margin:4px 0"><summary><b>${h(o.title)}</b></summary><div class="infoT"><table>${o.rows.map(r=>`<tr><td>${h(r[0])}</td><td>${h(r[1])}</td></tr>`).join("")}</table></div>${ol(o.q)}</details>`).join("");
+  const op=T("11번 · 의견 말하기 ("+OPINION.length+"개)")+ol(OPINION);
+  window.allQHtml=()=>`<p class="muted">시험에 나올 수 있는 문제들이에요. 문제은행은 3개월마다 새로 바꿉니다.</p>`+rd+pic+rs+inf+op;
+})();
+
+function showAllQ(id){
+  const box=$(id);
+  box.innerHTML='<details class="allq" style="margin-top:18px"><summary style="cursor:pointer;font-weight:800;padding:12px;border:2px solid var(--navy);border-radius:10px;text-align:center">📚 전체 문제 보기 <span style="font-weight:400;font-size:12px">(시험을 마친 회원만 볼 수 있어요)</span></summary><div style="margin-top:12px;font-size:14px;line-height:1.6">'+allQHtml()+'</div></details>';
+  box.classList.remove("hidden");
+}
+function afterFinish(){
+  if(aborted) return;                              // 중간에 그만둔 사람은 제외
+  try{ localStorage.setItem("toeicDone","1"); }catch(_){}
+  showAllQ("allqRes");
+}
+try{ if(localStorage.getItem("toeicDone")) showAllQ("allqSetup"); }catch(_){}
 const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
 
 /* ───────── 시험지 만들기 (11문제) ───────── */
@@ -659,7 +686,7 @@ async function runExam(){
 
 /* ───────── 결과 ───────── */
 function finish(){
-  if(finished) return; finished=true;
+  if(finished) return; finished=true; setTimeout(afterFinish,0);
   stream.getTracks().forEach(t=>t.stop());
   $("s-exam").classList.add("hidden"); $("s-result").classList.remove("hidden");
   const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
