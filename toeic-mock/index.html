@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TOEIC Speaking 모의시험 · NVEC</title>
+<style>
+:root{--navy:#0c1b33;--gold:#b6924b;--cream:#f7f3ea;--line:#e6e0d5;--text:#172033;--red:#c0392b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;color:var(--text);background:#f5f3ee}
+header{background:var(--navy);color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+header b{font-size:18px}header span{font-size:12px;color:#d7c49c;letter-spacing:2px}
+main{max-width:760px;margin:auto;padding:26px 16px 70px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 14px 40px #18233a12;padding:28px;margin-bottom:18px}
+h1{font-size:26px;margin:0 0 6px}h2{font-size:20px;margin:0 0 12px}
+.muted{color:#6c7280;font-size:14px;line-height:1.6}
+label.f{display:block;font-weight:700;margin:20px 0 8px}
+input[type=text]{width:100%;padding:14px;border:1px solid #d8d8d8;border-radius:10px;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{border:2px solid var(--line);border-radius:999px;padding:9px 15px;cursor:pointer;font-size:15px;user-select:none}
+.chips input{display:none}
+.chips input:checked+span{font-weight:800}
+.chips label:has(input:checked){border-color:var(--navy);border-width:3px;padding:8px 14px}
+.lv label{min-width:90px;text-align:center}
+button{font-family:inherit;cursor:pointer}
+.big{width:100%;margin-top:24px;padding:16px;border:0;border-radius:10px;background:var(--navy);color:#fff;font-size:17px;font-weight:800}
+.big:disabled{opacity:.4;cursor:not-allowed}
+.sec{background:#fff;border:2px solid var(--navy);color:var(--navy);border-radius:10px;padding:11px 16px;font-size:15px;font-weight:700}
+.sec:disabled{opacity:.4;cursor:not-allowed}
+.hidden{display:none!important}
+.qno{color:var(--gold);font-weight:800;letter-spacing:1px;font-size:13px}
+.qtext{font-size:22px;line-height:1.5;margin:10px 0 18px;min-height:70px}
+.qtext.hide{color:#aaa;font-style:italic;font-size:16px}
+.bar{height:10px;background:#eee;border-radius:99px;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;background:var(--gold);width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.rec{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--red)}
+.rec:before{content:"";width:12px;height:12px;border-radius:50%;background:var(--red);animation:b 1s infinite}
+@keyframes b{50%{opacity:.2}}
+.res{border-top:1px solid var(--line);padding:14px 0}
+.res audio{width:100%;margin-top:8px}
+.tag{display:inline-block;background:var(--cream);border-radius:6px;padding:2px 8px;font-size:12px;margin-right:6px}
+/* 시험 화면 (실제 오픽 연습 화면처럼) */
+.exam{max-width:440px;margin:0 auto;background:#ececec;border:1px solid #ddd;border-radius:6px;padding:0 18px 26px;text-align:center}
+.examTitle{margin:0 -18px 14px;background:#dcdcdc;padding:10px;font-size:30px;color:#1c2f5e;font-weight:300;letter-spacing:.5px}
+.redHead{color:#e03a3e;font-size:26px;margin:6px 0 16px;font-weight:700}
+.frame{background:#000;padding:10px;border-radius:2px;max-width:380px;margin:0 auto}
+.avatar.scene{width:100%;height:auto;border-radius:0;border:0;display:block;background:#b9c4a6}
+.avatar.scene.speaking{box-shadow:none;animation:none}
+.avImg{display:none;width:100%;height:auto}
+.scene.hasImg .avImg{display:block}
+.scene.hasImg svg{display:none}
+.scene.hasImg.speaking .avImg{animation:breathe .9s infinite alternate}
+@keyframes breathe{from{transform:scale(1)}to{transform:scale(1.015)}}
+.scene{overflow:hidden}
+.scene .mouth{transform-box:fill-box;transform-origin:center;transform:scaleY(.06)}
+.scene.speaking .mouth{animation:talk .24s infinite alternate}
+@keyframes talk{from{transform:scaleY(.15)}to{transform:scaleY(1)}}
+.scene .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.cap{background:#111;color:#f5b8d0;font-size:17px;padding:7px 4px;margin-top:0;text-align:center}
+.ctrl{background:#4a4a4a;padding:10px 0 6px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.rbtn{width:66px;height:66px;border-radius:50%;border:3px solid #bbb;background:radial-gradient(circle at 35% 30%,#555,#111);color:#fff;font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0}
+.rbtn .ric{font-size:26px;line-height:1;color:#3fc7ee}
+.rbtn:disabled{opacity:.45;cursor:not-allowed}
+.rleft{color:#ddd;font-size:12px}
+.qline{font-size:19px;line-height:1.7;margin:16px 6px 8px;min-height:24px;color:#222}
+.qtag{display:inline-block;background:#1c2f5e;color:#fff;font-weight:700;padding:6px 18px;font-size:17px;margin-bottom:8px}
+.exam .qno{margin-top:10px}
+.avatarWrap{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.avatar{width:72px;height:72px;border-radius:50%;border:3px solid var(--line);overflow:hidden;transition:.2s}
+.avatar svg{width:100%;height:100%;display:block}
+.avatar.speaking{border-color:var(--gold);box-shadow:0 0 0 6px #b6924b33;animation:sp .5s infinite alternate}
+@keyframes sp{to{transform:scale(1.06)}}
+.rules{line-height:1.9;padding-left:20px;font-size:15px}
+.meter{height:14px;background:#eee;border-radius:99px;overflow:hidden;margin:14px 0}
+.meter i{display:block;height:100%;width:0;background:#2e9e5b;transition:width .08s}
+.warn{background:#fff7e6;border:1px solid #f0d9a8;border-radius:10px;padding:12px;font-size:14px;line-height:1.6}
+.exam{max-width:560px}
+.readBox{background:#fff;border:2px solid #1c2f5e;border-radius:6px;padding:16px;font-size:18px;line-height:1.7;text-align:left;margin:14px 0}
+.picBox{background:#fff;border:2px solid #1c2f5e;border-radius:6px;margin:14px 0;overflow:hidden}
+.picBox svg{display:block;width:100%;height:auto}
+.infoT{background:#fff;border:2px solid #1c2f5e;border-radius:6px;margin:14px 0;text-align:left;overflow:hidden}
+.infoT h3{margin:0;background:#1c2f5e;color:#fff;padding:9px 14px;font-size:16px}
+.infoT table{width:100%;border-collapse:collapse;font-size:15px}
+.infoT td{padding:8px 12px;border-top:1px solid #e3e3e3;vertical-align:top}
+.infoT td:first-child{white-space:nowrap;font-weight:700;color:#1c2f5e}
+.opBox{background:#fff;border:2px solid #1c2f5e;border-radius:6px;padding:16px;font-size:18px;line-height:1.6;text-align:left;margin:14px 0}
+.stage{display:inline-block;padding:6px 18px;font-weight:800;font-size:16px;color:#fff;background:#1c2f5e;margin:10px 0 0}
+.stage.speak{background:#d3342b}
+.stage.listen{background:#555}
+.count{font-size:46px;font-weight:800;color:#1c2f5e;line-height:1.1;margin:4px 0}
+.count.speak{color:#d3342b}
+.skip{background:#fff;border:2px solid #1c2f5e;color:#1c2f5e;border-radius:8px;padding:8px 14px;font-weight:700;margin-top:6px}
+.ok{color:#2e9e5b;font-weight:800}.bad{color:#c0392b;font-weight:800}
+</style>
+</head>
+<body>
+<header><b>NVEC TOEIC Speaking 모의시험</b><span>PRACTICE TEST</span></header>
+
+<!-- 회원 전용 확인 -->
+<main id="gate">
+  <section class="panel" style="text-align:center">
+    <h1>🔒 회원 전용</h1>
+    <p class="muted" id="gateMsg">회원 확인 중입니다…</p>
+    <a class="big" id="gateLink" href="../" style="display:none;text-decoration:none;text-align:center">MY CLASS에서 로그인하기</a>
+    <p class="muted" style="margin-top:14px">MY CLASS에서 로그인한 뒤, 같은 브라우저에서 이 주소를 다시 열어 주세요.</p>
+  </section>
+</main>
+
+<main id="app" class="hidden">
+
+<!-- 1. 시작 -->
+<section id="s-setup" class="panel">
+  <h1>TOEIC Speaking 모의시험</h1>
+  <p class="muted">실제 시험처럼 <b>11문제</b>를 풀어요. 문장 읽기, 사진 설명, 질문 대답, 표 보고 대답, 의견 말하기 순서입니다. 준비 시간과 말하는 시간이 자동으로 흘러가고, 끝나면 내 목소리를 다시 들어볼 수 있어요.</p>
+  <div class="warn">마이크를 쓰는 시험이라 <b>크롬(Chrome)</b>으로 열고, 마이크 허용을 눌러 주세요. 이어폰을 끼면 더 좋아요. 시험 시간은 약 <b>20분</b>입니다.</div>
+
+  <label class="f">이름</label>
+  <input type="text" id="name" placeholder="이름을 적어 주세요">
+
+  <label class="f">내 목표 등급</label>
+  <div class="chips lv" id="levels"></div>
+  <p class="muted" id="lvHelp"></p>
+
+  <button class="big" id="startBtn" disabled>시험 시작</button>
+  <p class="muted" style="margin-top:14px">※ 이 모의시험의 문제는 학원에서 새로 만든 연습용입니다. 실제 TOEIC Speaking 시험 문제가 아니며, 시간과 형식은 실제와 조금 다를 수 있어요.</p>
+</section>
+
+<!-- 1.5 시험장 안내 -->
+<section id="s-orient" class="panel hidden">
+  <div class="qno" id="oStep"></div>
+  <div class="bar"><i id="oBar"></i></div>
+  <div class="avatarWrap"><div class="avatar" id="av1"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#e8dcc2"/><circle cx="50" cy="42" r="17" fill="#f3d6b8"/><path d="M30 40c0-18 40-18 40 0 0-8-8-14-20-14s-20 6-20 14z" fill="#3a2a1e"/><circle cx="44" cy="43" r="2" fill="#222"/><circle cx="56" cy="43" r="2" fill="#222"/><path class="mouth" d="M44 51q6 4 12 0" stroke="#a33" stroke-width="2" fill="none"/><path d="M22 92c4-20 52-20 56 0z" fill="#0c1b33"/></svg></div><b>Ava</b></div>
+
+  <div class="ostep" id="o1">
+    <h2>시험 안내 · Orientation</h2>
+    <ul class="rules">
+      <li>시험은 모두 <b>11문제</b>이고, 컴퓨터 목소리(Ava)가 영어로 안내합니다.</li>
+      <li><b>1~2번</b> 화면의 글을 소리 내어 읽기 · <b>3~4번</b> 사진 설명하기</li>
+      <li><b>5~7번</b> 질문 듣고 바로 대답 · <b>8~10번</b> 표를 보고 질문에 대답</li>
+      <li><b>11번</b> 내 의견 말하기 (준비 45초, 말하기 60초)</li>
+      <li>"Begin preparing now" 뒤에 <b>준비 시간</b>, "Begin speaking now"와 <b>삐- 소리</b> 뒤에 <b>말하기</b>가 시작돼요.</li>
+      <li>시간이 되면 <b>저절로 다음으로 넘어가요</b>. 지난 문제로 돌아갈 수 없습니다.</li>
+      <li>시험 중에는 <b>메모, 검색, 다른 사람의 도움</b>을 쓰지 않습니다.</li>
+    </ul>
+    <button class="big" data-go="2">읽었어요 · 다음</button>
+  </div>
+
+  <div class="ostep hidden" id="o2">
+    <h2>소리 확인 · Sound Check</h2>
+    <p class="muted">아래 버튼을 눌러 Ava의 목소리를 들어 보세요. 소리가 작으면 컴퓨터 볼륨을 올려 주세요.</p>
+    <button class="sec" id="soundBtn">🔊 소리 들어보기</button>
+    <label class="f" style="margin-top:16px">Ava 목소리 고르기 <span class="muted" style="font-weight:400">(보통은 그대로 두세요)</span></label>
+    <select id="voiceSel" style="width:100%;padding:12px;border:1px solid #d8d8d8;border-radius:10px;font-size:15px"></select>
+    <button class="big" id="soundOk" data-go="3" disabled>잘 들려요 · 다음</button>
+  </div>
+
+  <div class="ostep hidden" id="o3">
+    <h2>마이크 확인 · Microphone Check</h2>
+    <p class="muted">버튼을 누르고 <b>"My name is (내 이름)."</b> 이라고 4초 동안 말해 보세요. 초록 막대가 움직이면 마이크가 잘 되는 거예요.</p>
+    <button class="sec" id="micBtn">🎙️ 마이크 켜고 말하기</button>
+    <div class="meter"><i id="meter"></i></div>
+    <audio id="micPlay" controls class="hidden" style="width:100%"></audio>
+    <p class="muted hidden" id="micMsg"></p>
+    <button class="big" id="micOk" data-go="4" disabled>내 목소리가 들려요 · 다음</button>
+  </div>
+
+  <div class="ostep hidden" id="o4">
+    <h2>연습 문제 · Sample Question</h2>
+    <p class="muted">점수에 들어가지 않는 연습이에요. Ava가 묻는 말에 영어로 대답해 보세요. 끝나면 시험이 시작됩니다.</p>
+    <button class="sec" id="sampleBtn">▶ 연습 문제 듣기</button>
+    <div class="row" style="margin-top:12px"><span class="rec hidden" id="sampleRec">녹음 중</span></div>
+    <button class="big" id="sampleDone" disabled>답했어요 · 진짜 시험 시작</button>
+  </div>
+</section>
+
+<!-- 2. 시험 -->
+<section id="s-exam" class="exam hidden">
+  <div class="examTitle">NVEC TOEIC Speaking</div>
+  <h2 class="redHead" id="redHead">Directions</h2>
+  <div class="frame">
+        <div class="avatar scene" id="av2">
+      <img class="avImg" src="ava.png" alt="Ava" onload="this.parentNode.classList.add('hasImg')" onerror="this.remove()">
+      <svg viewBox="10 12 282 254" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdd6bd"/><stop offset="1" stop-color="#a9b695"/></linearGradient>
+          <linearGradient id="hairG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a3d31"/><stop offset=".6" stop-color="#34241e"/><stop offset="1" stop-color="#241814"/></linearGradient>
+          <linearGradient id="skinG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbe0c8"/><stop offset="1" stop-color="#f0c7a6"/></linearGradient>
+          <linearGradient id="jacketG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#232327"/><stop offset=".5" stop-color="#3a3a40"/><stop offset="1" stop-color="#232327"/></linearGradient>
+          <radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></radialGradient>
+        </defs>
+        <rect width="300" height="270" fill="url(#wall)"/>
+        <rect x="190" y="18" width="110" height="196" fill="#8a6a45"/>
+        <rect x="199" y="27" width="101" height="178" fill="#2f5a45"/>
+        <path d="M206 60h60M206 74h38M206 152h44M206 166h30" stroke="#6b9482" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+        <rect x="190" y="214" width="110" height="6" fill="#6f5434"/>
+        <rect x="0" y="238" width="300" height="32" fill="#9a8d72"/>
+        <!-- 머리카락(뒤) -->
+        <path d="M96 124C86 52 214 52 204 124C207 150 209 170 205 184C186 194 168 180 164 166L136 166C132 180 114 194 95 184C91 170 93 150 96 124z" fill="url(#hairG)"/>
+        <!-- 몸(재킷) -->
+        <path d="M40 270c4-60 42-80 110-80s106 20 110 80z" fill="url(#jacketG)"/>
+        <path d="M111 198l39 56 39-56-13-10h-52z" fill="#fdfdfd"/>
+        <path d="M122 193l28 34 28-34" stroke="#e1e1e6" stroke-width="2" fill="none"/>
+        <path d="M111 198l-26 14 26 62 36-20-36-56zM189 198l26 14-26 62-36-20 36-56z" fill="#2c2c31"/>
+        <path d="M111 198l-26 14 6 14 24-12zM189 198l26 14-6 14-24-12z" fill="#4a4a52" opacity=".8"/>
+        <!-- 넥타이 -->
+        <path d="M141 207h18l-3 13h-12z" fill="#b62a2e"/>
+        <path d="M143 220h14l7 44-14 8-14-8z" fill="#de3b3f"/>
+        <path d="M148 224l-1 36" stroke="#f26d70" stroke-width="2" opacity=".6"/>
+        <!-- 목 -->
+        <path d="M133 166h34v38q-17 13-34 0z" fill="#ecc3a3"/>
+        <path d="M133 182q17 13 34 0v-9q-17 11-34 0z" fill="#d8a384" opacity=".75"/>
+        <!-- 귀걸이 -->
+                <!-- 얼굴 -->
+        <ellipse cx="150" cy="126" rx="41" ry="51" fill="url(#skinG)"/>
+        <path d="M112 150q8 34 38 34t38-34q-8 24-38 24t-38-24z" fill="#e8b999" opacity=".35"/>
+        <ellipse cx="126" cy="147" rx="10" ry="6" fill="#f09a90" opacity=".42"/>
+        <ellipse cx="174" cy="147" rx="10" ry="6" fill="#f09a90" opacity=".42"/>
+        <ellipse cx="109" cy="131" rx="4.6" ry="8.5" fill="#f0c4a4"/>
+        <ellipse cx="191" cy="131" rx="4.6" ry="8.5" fill="#f0c4a4"/>
+        <!-- 앞머리(옆가르마) -->
+        <path d="M103 130C92 60 170 40 200 92C206 106 204 118 199 132C194 106 176 90 146 94C126 98 110 110 103 130z" fill="url(#hairG)"/>
+        <path d="M122 78C146 60 182 66 194 90M112 98C124 84 142 78 160 80" stroke="#7a5848" stroke-width="3" stroke-linecap="round" fill="none" opacity=".55"/>
+                <!-- 눈썹 -->
+        <path d="M120 112q11-7 22-2M158 110q11-5 22 2" stroke="#33231d" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+        <!-- 눈 -->
+        <g class="eye"><ellipse cx="131" cy="125" rx="9" ry="5.6" fill="#fff"/><circle cx="131" cy="125.4" r="4.4" fill="#5a3a2c"/><circle cx="131" cy="125.4" r="2.2" fill="#1c120e"/><circle cx="133" cy="123.6" r="1.4" fill="#fff"/><path d="M121 125q10-10 20 0" stroke="#1f1511" stroke-width="2.8" stroke-linecap="round" fill="none"/><path d="M123 119q8-5 16 0" stroke="#c99a84" stroke-width="1.2" fill="none"/></g>
+        <g class="eye"><ellipse cx="169" cy="125" rx="9" ry="5.6" fill="#fff"/><circle cx="169" cy="125.4" r="4.4" fill="#5a3a2c"/><circle cx="169" cy="125.4" r="2.2" fill="#1c120e"/><circle cx="171" cy="123.6" r="1.4" fill="#fff"/><path d="M159 125q10-10 20 0" stroke="#1f1511" stroke-width="2.8" stroke-linecap="round" fill="none"/><path d="M161 119q8-5 16 0" stroke="#c99a84" stroke-width="1.2" fill="none"/></g>
+        <!-- 코 -->
+        <path d="M150 128c-1 9-4 15-7 18 4 3 10 3 14 0-3-3-6-9-7-18z" fill="#e9b898" opacity=".5"/>
+        <path d="M144 147q6 3 12 0" stroke="#d29c80" stroke-width="1.6" fill="none"/>
+        <!-- 입 -->
+        <path d="M133 161q8-6 17-3q9-3 17 3q-17 17-34 0z" fill="#d4686a"/>
+        <path d="M134 161q8-3 16-1q8-2 16 1" stroke="#a24649" stroke-width="1.5" fill="none"/>
+        <path d="M141 164q9 4 18 0" stroke="#f0a2a0" stroke-width="1.6" fill="none" opacity=".8"/>
+        <ellipse class="mouth" cx="150" cy="163" rx="10.5" ry="5.4" fill="#6a2227"/>
+        <rect width="300" height="270" fill="url(#vig)"/>
+      </svg>
+    </div>
+    <div class="cap" id="cap">&nbsp;</div>
+  </div>
+  <div class="qno" id="qno"></div>
+  <div class="bar"><i id="pbar"></i></div>
+  <div id="taskArea"></div>
+  <div class="stage" id="stage">Directions</div>
+  <div class="count" id="count"></div>
+  <div class="row" style="justify-content:center">
+    <span class="rec hidden" id="recInd">녹음 중</span>
+  </div>
+  <p class="muted" id="hint" style="text-align:center"></p>
+  <button class="skip hidden" id="skipBtn">준비 건너뛰고 바로 말하기</button>
+</section>
+
+<!-- 3. 결과 -->
+<section id="s-result" class="panel hidden">
+  <h1>시험 끝! 수고하셨어요 👏</h1>
+  <p class="muted" id="sum"></p>
+  <div id="results"></div>
+  <button class="big" id="againBtn">다시 하기</button>
+</section>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../config.js"></script>
+<script>
+/* ───────── 문제 은행 (학원에서 새로 만든 연습용 문제) ───────── */
+const DIR = {
+  read:"Questions one and two. Read a text aloud. In these questions, you will read aloud the text on the screen. You will have forty-five seconds to prepare. Then you will have forty-five seconds to read the text aloud.",
+  pic:"Questions three and four. Describe a picture. In these questions, you will describe the picture on your screen in as much detail as you can. You will have forty-five seconds to prepare. Then you will have thirty seconds to speak.",
+  resp:"Questions five through seven. Respond to questions. In these questions, you will answer three questions. You will have no time to prepare. You will have fifteen seconds to answer questions five and six, and thirty seconds to answer question seven.",
+  info:"Questions eight through ten. Respond to questions using the information provided. You will have forty-five seconds to read the information. Then you will hear three questions. You will have fifteen seconds to answer questions eight and nine, and thirty seconds to answer question ten. Question ten will be played two times.",
+  op:"Question eleven. Express an opinion. In this question, you will give your opinion about a topic. You will have forty-five seconds to prepare. Then you will have sixty seconds to speak. Give reasons and examples to support your opinion."
+};
+const CUE_PREP = "Begin preparing now.", CUE_SPEAK = "Begin speaking now.", CUE_READ = "Begin reading the information now.";
+const SOUND_TEXT = "Hello. Welcome to the TOEIC Speaking practice test. Can you hear my voice clearly? If you can, please click the next button.";
+const SAMPLE_TEXT = "This is a sample question. It will not be scored. Please tell me about your favorite food and why you like it.";
+
+/* 1~2번 읽기 */
+const READ = [
+  "Attention, shoppers. Thank you for visiting Greenfield Mall. Our spring sale begins tomorrow morning at nine o'clock. Customers who spend more than fifty dollars will receive a free tote bag. Please remember that the parking lot on the east side will be closed for repairs until Friday. We apologize for any inconvenience and hope you enjoy your visit.",
+  "Are you looking for a quiet place to relax after a long week? Welcome to Blue Harbor Spa. Our professional staff offers massages, facial treatments, and yoga classes every day. Book an appointment this month and receive a twenty percent discount on your first visit. Call us today, or visit our website to find out more about our services.",
+  "Thank you for calling Westside Dental Clinic. Our office is currently closed. Our regular hours are Monday through Friday, from eight thirty in the morning to five thirty in the evening. If this is an emergency, please press one to speak with the doctor on call. Otherwise, leave your name and phone number, and we will return your call as soon as possible.",
+  "Good morning, everyone, and welcome aboard the City Lights Tour. Over the next two hours, we will visit five famous landmarks, including the old clock tower and the national art museum. Please keep your belongings with you at all times, and remember to be back on the bus by eleven fifteen. If you have any questions, feel free to ask me.",
+  "Welcome to the monthly meeting of the Marketing Department. Today, we will review last quarter's sales results and discuss our plan for the new product launch. After that, Ms. Park from the design team will present the new packaging. Please turn off your mobile phones, and save your questions for the end of the presentation.",
+  "Attention, library visitors. Starting next Monday, the main library will open one hour earlier, at eight o'clock in the morning. In addition, a new study room has been added on the third floor and may be reserved online. Members can borrow up to ten books for three weeks. Thank you for your cooperation, and enjoy your reading."
+];
+
+/* 3~4번 사진 (직접 그린 그림) */
+const PS = (x,y,shirt,hair,s=1,legs=true)=>`<g transform="translate(${x},${y}) scale(${s})"><rect x="-15" y="22" width="30" height="42" rx="11" fill="${shirt}"/>${legs?`<rect x="-12" y="60" width="10" height="36" rx="3" fill="#33384a"/><rect x="2" y="60" width="10" height="36" rx="3" fill="#33384a"/>`:""}<circle cx="0" cy="8" r="14" fill="#f1c9a5"/><path d="M-14 6a14 14 0 0 1 28 0c-7-6-21-6-28 0z" fill="${hair}"/><circle cx="-5" cy="9" r="1.5" fill="#222"/><circle cx="5" cy="9" r="1.5" fill="#222"/><path d="M-4 15q4 3 8 0" stroke="#a33" fill="none" stroke-width="1.5"/></g>`;
+const SCENES = [
+ { key:"office", words:[["laptop","computer"],["table","desk"],["meeting","discussion","presentation"],["whiteboard","board","chart","graph"],["window"],["woman","women","lady"],["man","men"],["coffee","cup","cups"]],
+   svg:`<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="260" fill="#e8eef5"/><rect x="0" y="215" width="400" height="45" fill="#c9bda7"/><rect x="18" y="22" width="86" height="100" fill="#bfe0f5" stroke="#8a9bb0" stroke-width="5"/><path d="M61 22v100M18 72h86" stroke="#8a9bb0" stroke-width="3"/><rect x="250" y="20" width="132" height="92" fill="#fff" stroke="#8a9bb0" stroke-width="5"/><rect x="266" y="78" width="14" height="24" fill="#5b8def"/><rect x="288" y="62" width="14" height="40" fill="#e2744b"/><rect x="310" y="46" width="14" height="56" fill="#5b8def"/><rect x="332" y="68" width="14" height="34" fill="#e2744b"/>${PS(330,128,"#2f5d8a","#2b1d14",1)}${PS(80,98,"#c44d6b","#4a2f1c",1,false)}${PS(165,98,"#3d7f5c","#1f1a18",1,false)}${PS(250,98,"#7a5cc4","#6b4a2a",1,false)}<rect x="40" y="170" width="260" height="16" rx="4" fill="#8a5a33"/><rect x="52" y="186" width="10" height="34" fill="#6d4526"/><rect x="278" y="186" width="10" height="34" fill="#6d4526"/><rect x="64" y="154" width="34" height="18" rx="2" fill="#555"/><rect x="150" y="154" width="34" height="18" rx="2" fill="#555"/><rect x="236" y="154" width="34" height="18" rx="2" fill="#555"/><rect x="118" y="158" width="14" height="12" rx="2" fill="#fff" stroke="#999"/><rect x="204" y="158" width="14" height="12" rx="2" fill="#fff" stroke="#999"/></svg>` },
+ { key:"cafe", words:[["table","tables"],["coffee","cup","cups","drink","drinks"],["woman","lady","girl"],["man","guy","waiter","server"],["tray"],["plant","plants","flower"],["menu","sign","board"],["umbrella","awning","outside","outdoor"]],
+   svg:`<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="260" fill="#f4e7d2"/><rect x="0" y="222" width="400" height="38" fill="#b9a98c"/><path d="M0 0h400v40H0z" fill="#fff"/><path d="M0 0h50v40H0zM100 0h50v40h-50zM200 0h50v40h-50zM300 0h50v40h-50z" fill="#d94b4b"/><rect x="18" y="64" width="72" height="92" fill="#3b4a3f" stroke="#7a5a33" stroke-width="5"/><path d="M28 84h50M28 100h38M28 116h46" stroke="#fff" stroke-width="3" stroke-linecap="round"/><rect x="318" y="150" width="34" height="48" rx="6" fill="#b0643a"/><circle cx="335" cy="138" r="20" fill="#4f9a55"/><circle cx="318" cy="150" r="14" fill="#5cae62"/><circle cx="352" cy="148" r="14" fill="#5cae62"/>${PS(150,86,"#e07a5f","#3a2518",1,false)}${PS(236,92,"#4d7ea8","#1d1815",1,false)}<ellipse cx="193" cy="176" rx="82" ry="11" fill="#8a5a33"/><rect x="188" y="186" width="10" height="38" fill="#6d4526"/><rect x="150" y="160" width="14" height="12" rx="3" fill="#fff"/><rect x="224" y="160" width="14" height="12" rx="3" fill="#fff"/><rect x="186" y="164" width="14" height="8" fill="#f5d36b"/>${PS(300,56,"#2d2d34","#5a3a22",1.05)}<rect x="262" y="118" width="46" height="6" rx="2" fill="#c9c9cf"/><rect x="272" y="104" width="12" height="14" rx="3" fill="#fff"/><rect x="290" y="108" width="12" height="10" rx="3" fill="#fff"/></svg>` },
+ { key:"airport", words:[["suitcase","suitcases","luggage","bag","bags"],["airport","terminal","station"],["counter","desk","check-in"],["woman","women","lady"],["man","men"],["sign","gate","screen"],["clock","time"],["window","plane","airplane"],["line","queue","waiting"]],
+   svg:`<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="260" fill="#dfe7ee"/><rect x="0" y="222" width="400" height="38" fill="#b7c0c9"/><rect x="24" y="20" width="352" height="34" rx="5" fill="#1c2f5e"/><text x="200" y="45" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="#fff">GATE 12  ·  DEPARTURES</text><circle cx="52" cy="92" r="22" fill="#fff" stroke="#1c2f5e" stroke-width="4"/><path d="M52 92V77M52 92l10 6" stroke="#1c2f5e" stroke-width="3" stroke-linecap="round"/><rect x="250" y="70" width="126" height="76" fill="#bfe0f5" stroke="#8a9bb0" stroke-width="5"/><path d="M270 118l40-14 26 6-22 8z" fill="#fff"/><path d="M300 108l16-12" stroke="#fff" stroke-width="4"/><rect x="236" y="168" width="140" height="48" rx="4" fill="#8f9aa6"/><rect x="236" y="164" width="140" height="8" fill="#6c7782"/>${PS(306,96,"#3d7f5c","#1f1a18",1,false)}${PS(80,112,"#c44d6b","#4a2f1c",1)}<rect x="104" y="176" width="26" height="36" rx="4" fill="#d9822b"/><path d="M112 176v-8h10v8" stroke="#6b4a1c" stroke-width="3" fill="none"/>${PS(168,112,"#4d7ea8","#2b1d14",1)}<rect x="188" y="180" width="30" height="32" rx="4" fill="#6a5acd"/><path d="M196 180v-8h14v8" stroke="#3a2f8c" stroke-width="3" fill="none"/></svg>` },
+ { key:"park", words:[["park","outside","outdoors"],["tree","trees"],["bench"],["dog","puppy"],["woman","women","lady","girl"],["man","men","boy"],["running","jogging","jogger","run"],["sun","sunny","sky"],["grass","path"]],
+   svg:`<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="260" fill="#cfe9fb"/><circle cx="350" cy="44" r="24" fill="#ffd95a"/><rect y="150" width="400" height="110" fill="#7cc06a"/><path d="M0 214q200-34 400 0v46H0z" fill="#e9d9b3"/><rect x="60" y="86" width="16" height="80" fill="#7a5233"/><circle cx="68" cy="74" r="38" fill="#3f9a4b"/><circle cx="42" cy="96" r="24" fill="#4aa957"/><circle cx="96" cy="96" r="24" fill="#4aa957"/><rect x="200" y="150" width="96" height="10" rx="3" fill="#8a5a33"/><rect x="206" y="160" width="6" height="22" fill="#6d4526"/><rect x="284" y="160" width="6" height="22" fill="#6d4526"/><rect x="200" y="124" width="96" height="8" rx="3" fill="#8a5a33"/>${PS(226,98,"#e07a5f","#3a2518",.9,false)}${PS(268,98,"#4d7ea8","#1d1815",.9,false)}${PS(150,120,"#d94b6b","#3a2518",1)}<path d="M132 172l-16 12M168 172l14 14" stroke="#33384a" stroke-width="9" stroke-linecap="round"/><ellipse cx="338" cy="204" rx="26" ry="14" fill="#b07a3b"/><circle cx="364" cy="194" r="11" fill="#b07a3b"/><path d="M360 186l-4-10 9 4z" fill="#8a5a2b"/><rect x="318" y="212" width="6" height="16" fill="#8a5a2b"/><rect x="346" y="212" width="6" height="16" fill="#8a5a2b"/><path d="M314 200q-14-6-20-16" stroke="#b07a3b" stroke-width="5" fill="none" stroke-linecap="round"/></svg>` }
+];
+
+/* 5~7번 질문에 대답 */
+const RESP = [
+ {topic:"shopping", intro:"Imagine that a magazine is doing a survey about shopping habits. You have agreed to answer three questions.", q:[
+   "How often do you go shopping, and where do you usually go?",
+   "Do you prefer shopping alone or with other people? Why?",
+   "What would make you more likely to try a new store? Please explain."]},
+ {topic:"commuting", intro:"Imagine that a research company is doing a survey about how people travel to work or school. You have agreed to answer three questions.", q:[
+   "How do you usually get to work or school?",
+   "What do you do during your trip to pass the time?",
+   "How could public transportation in your city be improved? Please explain your ideas."]},
+ {topic:"restaurants", intro:"Imagine that a local newspaper is doing a survey about eating out. You have agreed to answer three questions.", q:[
+   "How often do you eat at a restaurant?",
+   "What kind of restaurant do you like best, and why?",
+   "Do you think it is better to cook at home or to eat out? Give reasons for your answer."]},
+ {topic:"phones", intro:"Imagine that a technology company is doing a survey about mobile phone use. You have agreed to answer three questions.", q:[
+   "What kinds of mobile apps do you use most often?",
+   "When did you first start using a smartphone?",
+   "Do you think people spend too much time on their phones? Explain your opinion."]},
+ {topic:"weekends", intro:"Imagine that a community center is doing a survey about free time activities. You have agreed to answer three questions.", q:[
+   "What do you usually do on weekends?",
+   "Who do you usually spend your weekends with?",
+   "What is a new hobby you would like to try, and why?"]}
+];
+
+/* 8~10번 표 보고 대답 */
+const INFO = [
+ {title:"Hartwell Business Conference · Friday, June 12", rows:[
+   ["9:00 – 9:30","Registration · Main Lobby"],
+   ["9:30 – 10:30","Keynote Speech: The Future of Retail · Hall A (Dr. Susan Miller)"],
+   ["10:30 – 11:00","Coffee Break · Main Lobby"],
+   ["11:00 – 12:00","Workshop: Social Media Marketing · Room 204 (Kevin Lee)"],
+   ["12:00 – 1:00","Lunch · Garden Café"],
+   ["1:00 – 2:00","Panel: Working with Global Clients · Hall A"]],
+  q:["Hello, this is Anna. I am coming to the conference on Friday. What time does the registration start, and where is it held?",
+     "I heard that there is a workshop about marketing. Who is leading it, and where will it take place?",
+     "I have to leave before lunch, so I will miss the afternoon. Could you tell me about all of the sessions scheduled in the morning?"]},
+ {title:"Itinerary · Daniel Kim · Business Trip to Singapore", rows:[
+   ["Mar 3 (Mon)","Depart Seoul 9:40 AM, Flight PA 112 · Arrive Singapore 3:20 PM"],
+   ["Mar 3 (Mon)","Hotel check-in 4:30 PM · Marina Bay Hotel"],
+   ["Mar 4 (Tue)","10:00 AM Meeting with Ace Trading Co. · 12:30 PM Lunch with Mr. Tan"],
+   ["Mar 5 (Wed)","2:00 PM Factory visit · 7:00 PM Dinner with the sales team"],
+   ["Mar 6 (Thu)","Depart Singapore 6:10 PM, Flight PA 113"]],
+  q:["Hi, this is Daniel's coworker. What time does his flight leave on March third, and when does he arrive in Singapore?",
+     "Where is he staying, and what time can he check in?",
+     "Could you tell me about all of his meetings and activities on March fourth and fifth?"]},
+ {title:"Riverside Community Festival · Saturday, October 18", rows:[
+   ["10:00 AM","Opening Ceremony · Main Stage"],
+   ["11:00 AM","Cooking Contest · Food Tent (free to watch)"],
+   ["1:00 PM","Kids' Art Workshop · Room B ($5 per child)"],
+   ["3:00 PM","Live Music: The Blue Notes · Main Stage"],
+   ["5:00 PM","Fireworks · Riverside Park"]],
+  q:["What time does the cooking contest begin, and is there a fee to watch it?",
+     "I have two children. Is there an activity for them, and how much does it cost?",
+     "I can only come in the afternoon. Could you tell me about all of the events from one o'clock to the end of the day?"]}
+];
+
+/* 11번 의견 */
+const OPINION = [
+  "Some people think that students should wear school uniforms. Others disagree. What is your opinion? Give reasons and examples to support your answer.",
+  "Do you agree or disagree with the following statement? Working from home is better than working in an office. Use specific reasons and examples to support your opinion.",
+  "Some people prefer to travel alone, while others prefer to travel in a group. Which do you prefer, and why? Use specific reasons and examples.",
+  "Do you think companies should allow employees to choose their own working hours? Explain your opinion with specific reasons and examples.",
+  "Is it better to rent an apartment or to buy a house? Give reasons and examples to support your opinion.",
+  "Some people say that learning English is more effective with a native speaker. Do you agree or disagree? Support your answer with reasons and examples.",
+  "Do you think it is a good idea for a company to offer free lunch to its employees? Explain your opinion with specific reasons and examples.",
+  "Some people prefer to read books on paper, while others prefer reading on a screen. Which do you prefer? Use specific reasons and examples."
+];
+
+/* ───────── 화면 준비 ───────── */
+const $ = id => document.getElementById(id);
+const GRADES = [["IL",70],["IM1",95],["IM2",115],["IM3",130],["IH",145],["AL",160]];
+const GRADE_HELP = {
+  IL:"Intermediate Low · 말하기 점수 약 60~80점대",
+  IM1:"Intermediate Mid 1 · 약 90~100점대",
+  IM2:"Intermediate Mid 2 · 약 110~120점대",
+  IM3:"Intermediate Mid 3 · 약 130점대 (기업 지원 때 자주 요구)",
+  IH:"Intermediate High · 약 140~150점대",
+  AL:"Advanced Low · 약 160점 이상"
+};
+let grade="";
+GRADES.forEach(([g])=>$("levels").insertAdjacentHTML("beforeend",`<label><input type="radio" name="lv" value="${g}"><span>${g}</span></label>`));
+function refresh(){
+  const need=[]; if(!$("name").value.trim()) need.push("이름"); if(!grade) need.push("목표 등급");
+  $("startBtn").disabled=need.length>0;
+  $("startBtn").textContent=need.length?"아직 안 고른 것: "+need.join(", "):"시험 시작";
+}
+$("levels").addEventListener("change",e=>{grade=e.target.value;$("lvHelp").textContent=GRADE_HELP[grade];refresh();});
+$("name").addEventListener("input",refresh);
+refresh();
+
+const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+
+/* ───────── 시험지 만들기 (11문제) ───────── */
+function build(){
+  const t=[];
+  shuffle(READ).slice(0,2).forEach((text,i)=>t.push({no:1+i,kind:"read",label:"Read a text aloud",text,prep:45,speak:45,dir:i===0?DIR.read:null}));
+  shuffle(SCENES).slice(0,2).forEach((sc,i)=>t.push({no:3+i,kind:"pic",label:"Describe a picture",scene:sc,prep:45,speak:30,dir:i===0?DIR.pic:null}));
+  const r=RESP[Math.floor(Math.random()*RESP.length)];
+  r.q.forEach((q,i)=>t.push({no:5+i,kind:"resp",label:"Respond to questions",prompt:q,prep:0,speak:i<2?15:30,dir:i===0?DIR.resp:null,intro:i===0?r.intro:null}));
+  const f=INFO[Math.floor(Math.random()*INFO.length)];
+  f.q.forEach((q,i)=>t.push({no:8+i,kind:"info",label:"Respond using information",info:f,prompt:q,prep:0,read:i===0?45:0,speak:i<2?15:30,twice:i===2,dir:i===0?DIR.info:null}));
+  const o=OPINION[Math.floor(Math.random()*OPINION.length)];
+  t.push({no:11,kind:"op",label:"Express an opinion",prompt:o,text:o,prep:45,speak:60,dir:DIR.op});
+  return t;
+}
+
+/* ───────── 음성 인식 · 목소리 (오픽 모의시험과 같은 방식) ───────── */
+let stream=null;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recog=null, heard="", srOn=false, srDone=null;
+
+function startSR(){
+  heard=""; srOn=false;
+  if(!SR) return;
+  recog = new SR();
+  recog.lang="en-US"; recog.continuous=true; recog.interimResults=false;
+  recog.onresult = e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) heard += e.results[i][0].transcript+" ";
+    }
+  };
+  recog.onend = ()=>{
+    if(srOn){ try{recog.start();}catch(_){ } }   // 녹음 중이면 자동으로 이어서 듣기
+    else if(srDone){ srDone(); srDone=null; }
+  };
+  recog.onerror = ()=>{};
+  srOn=true;
+  try{recog.start();}catch(_){ }
+}
+function stopSR(){
+  return new Promise(res=>{
+    if(!recog||!srOn){ res(); return; }
+    srOn=false; srDone=res;
+    try{recog.stop();}catch(_){ res(); }
+    setTimeout(res,1200);                          // 안 끝나도 1.2초 뒤 진행
+  });
+}
+function abortSR(){ srOn=false; srDone=null; try{recog&&recog.abort();}catch(_){ } }
+
+/* 목소리 고르기: 자연스러운 목소리를 먼저 찾고, 직접 바꿀 수도 있어요 */
+function enVoices(){ return speechSynthesis.getVoices().filter(v=>/^en[-_]US/i.test(v.lang)); }
+function pickVoice(){
+  const vs = enVoices();
+  let saved=""; try{saved=localStorage.getItem("opicVoice")||"";}catch(_){}
+  const mine = vs.find(v=>v.name===saved);
+  if(mine) return mine;
+  const rank = v=>{
+    const n=v.name;
+    if(/Natural/i.test(n)) return 0;              // Edge의 자연스러운 목소리
+    if(/Google US English/i.test(n)) return 1;     // 크롬
+    if(/Samantha|Aria|Jenny|Ava|Allison/i.test(n)) return 2;
+    if(/Zira|David|Mark/i.test(n)) return 5;       // 윈도우 기본(기계 느낌)
+    return 3;
+  };
+  return vs.slice().sort((a,b)=>rank(a)-rank(b))[0];
+}
+function fillVoices(){
+  const sel=$("voiceSel"); if(!sel) return;
+  const vs=enVoices(), cur=pickVoice();
+  sel.innerHTML = vs.map(v=>`<option value="${v.name}"${cur&&v.name===cur.name?" selected":""}>${v.name}</option>`).join("") || "<option>(영어 목소리가 없어요)</option>";
+}
+/* 원어민 음성 파일(audio/해시.mp3)을 먼저 재생하고, 없으면 컴퓨터 음성으로 대신해요 */
+function hashText(s){ let x=5381; for(let i=0;i<s.length;i++) x=((x*33)^s.charCodeAt(i))>>>0; return x.toString(16); }
+let curAudio=null;
+function stopSay(){
+  speechSynthesis.cancel();
+  if(curAudio){ curAudio.onended=curAudio.onerror=curAudio.onplay=null; curAudio.pause(); curAudio=null; }
+  document.querySelectorAll(".avatar").forEach(a=>a.classList.remove("speaking"));
+}
+function say(text, onend){
+  stopSay();
+  const avs=[...document.querySelectorAll(".avatar")];
+  const a = new Audio("audio/"+hashText(text)+".mp3");
+  curAudio = a;
+  let fell=false;
+  const fallback=()=>{ if(fell||curAudio!==a) return; fell=true; curAudio=null; ttsSay(text,onend); };
+  a.onplay=()=>avs.forEach(x=>x.classList.add("speaking"));
+  a.onended=()=>{ avs.forEach(x=>x.classList.remove("speaking")); curAudio=null; onend&&onend(); };
+  a.onerror=fallback;
+  a.play().catch(fallback);
+}
+function ttsSay(text, onend){
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang="en-US"; u.rate=0.92;
+  const v = pickVoice();
+  if(v) u.voice=v;
+  const avs=[...document.querySelectorAll(".avatar")];
+  const stop=()=>avs.forEach(a=>a.classList.remove("speaking"));
+  u.onstart=()=>avs.forEach(a=>a.classList.add("speaking"));
+  u.onend=()=>{stop();onend&&onend();};
+  u.onerror=()=>{stop();onend&&onend();};
+  speechSynthesis.speak(u);
+}
+
+/* 말하기 분석 */
+const CONNECT = /\b(because|however|but|so|also|although|for example|for instance|actually|finally|first|second|then|after that|in addition|moreover|therefore|even though|while|when|if|which|that)\b/gi;
+const wordsOf = s => (s.toLowerCase().match(/[a-z']+/g)||[]);
+function analyze(text,sec){
+  const w=wordsOf(text), n=w.length;
+  return {n, conn:(text.match(CONNECT)||[]).length, wpm: sec>0?Math.round(n/sec*60):0};
+}
+function readAccuracy(orig,heard){
+  const o=wordsOf(orig), h=wordsOf(heard), bag={};
+  h.forEach(x=>bag[x]=(bag[x]||0)+1);
+  const miss=[]; let hit=0;
+  o.forEach(x=>{ if(bag[x]>0){bag[x]--;hit++;} else miss.push(x); });
+  return {acc:o.length?hit/o.length:0, miss:[...new Set(miss)]};
+}
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+function sayP(text){
+  return new Promise(res=>{
+    let done=false; const f=()=>{if(!done){done=true;res();}};
+    say(text,f); setTimeout(f, 60000);
+  });
+}
+let actx=null;
+function beep(freq=880){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.frequency.value=freq; g.gain.value=.18; o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime+.28);
+  }catch(_){}
+}
+
+/* ───── 시험장 안내 ───── */
+function oGo(n){
+  document.querySelectorAll(".ostep").forEach(e=>e.classList.add("hidden"));
+  $("o"+n).classList.remove("hidden");
+  $("oStep").textContent=`ORIENTATION  ${n} / 4`;
+  $("oBar").style.width=(n/4*100)+"%";
+  stopSay();
+}
+$("startBtn").onclick=()=>{ $("s-setup").classList.add("hidden"); $("s-orient").classList.remove("hidden"); oGo(1); };
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>oGo(+b.dataset.go)));
+$("soundBtn").onclick=()=>say(SOUND_TEXT,()=>{ $("soundOk").disabled=false; });
+
+$("micBtn").onclick=async()=>{
+  $("micMsg").classList.add("hidden");
+  try{ if(!stream) stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ $("micMsg").textContent="마이크를 쓸 수 없어요. 주소창 왼쪽 자물쇠에서 마이크를 '허용'으로 바꾼 뒤 다시 눌러 주세요."; $("micMsg").classList.remove("hidden"); return; }
+  $("micBtn").disabled=true; $("micOk").disabled=true;
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const an=ctx.createAnalyser(); an.fftSize=256; ctx.createMediaStreamSource(stream).connect(an);
+  const data=new Uint8Array(an.fftSize); let run=true;
+  (function tick(){ if(!run) return; an.getByteTimeDomainData(data); let m=0; for(const v of data) m=Math.max(m,Math.abs(v-128)); $("meter").style.width=Math.min(100,m/128*220)+"%"; requestAnimationFrame(tick); })();
+  const ch=[], r=new MediaRecorder(stream);
+  r.ondataavailable=e=>ch.push(e.data);
+  r.onstop=()=>{ run=false; $("meter").style.width="0"; ctx.close();
+    const p=$("micPlay"); p.src=URL.createObjectURL(new Blob(ch,{type:r.mimeType})); p.classList.remove("hidden"); p.play().catch(()=>{});
+    $("micBtn").disabled=false; $("micBtn").textContent="🎙️ 다시 녹음해 보기"; $("micOk").disabled=false; };
+  r.start(); setTimeout(()=>r.stop(),4000);
+};
+let sampleRecorder=null;
+$("sampleBtn").onclick=()=>{
+  if(!stream){ alert("먼저 3단계에서 마이크를 켜 주세요."); oGo(3); return; }
+  $("sampleBtn").disabled=true;
+  say(SAMPLE_TEXT,()=>{ $("sampleRec").classList.remove("hidden"); sampleRecorder=new MediaRecorder(stream); sampleRecorder.start(); $("sampleDone").disabled=false; });
+};
+$("sampleDone").onclick=()=>{
+  if(sampleRecorder&&sampleRecorder.state==="recording") sampleRecorder.stop();
+  $("s-orient").classList.add("hidden"); $("s-exam").classList.remove("hidden");
+  runExam();
+};
+
+/* ───────── 시험 진행 ───────── */
+let exam=[], answers=[], skipNow=null;
+function countdown(sec,cls,skippable){
+  return new Promise(res=>{
+    let left=sec; const bar=$("pbar");
+    const draw=()=>{ $("count").textContent=left; $("count").className="count "+cls; bar.style.width=((sec-left)/sec*100)+"%"; };
+    draw();
+    $("skipBtn").classList.toggle("hidden",!skippable);
+    const end=()=>{ clearInterval(iv); skipNow=null; $("skipBtn").classList.add("hidden"); res(); };
+    const iv=setInterval(()=>{ left--; draw(); if(left<=0) end(); },1000);
+    skipNow=skippable?end:null;
+  });
+}
+$("skipBtn").onclick=()=>{ if(skipNow) skipNow(); };
+function setStage(txt,cls){ const s=$("stage"); s.textContent=txt; s.className="stage "+(cls||""); $("count").textContent=""; $("pbar").style.width="0"; }
+function render(t){
+  let h="";
+  if(t.kind==="read") h=`<div class="readBox">${t.text}</div>`;
+  else if(t.kind==="pic") h=`<div class="picBox">${t.scene.svg}</div>`;
+  else if(t.kind==="info") h=`<div class="infoT"><h3>${t.info.title}</h3><table>${t.info.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div>`;
+  else if(t.kind==="op") h=`<div class="opBox">${t.text}</div>`;
+  $("taskArea").innerHTML=h;
+}
+function recordFor(t){
+  return new Promise(async res=>{
+    const chunks=[]; const rec=new MediaRecorder(stream);
+    rec.ondataavailable=e=>chunks.push(e.data);
+    const t0=Date.now();
+    rec.onstop=async()=>{
+      await stopSR();
+      const blob=new Blob(chunks,{type:rec.mimeType||"audio/webm"});
+      answers.push({t,blob,url:URL.createObjectURL(blob),sec:Math.round((Date.now()-t0)/1000),text:heard.trim()});
+      res();
+    };
+    rec.start(); startSR();
+    $("recInd").classList.remove("hidden");
+    await countdown(t.speak,"speak",false);
+    $("recInd").classList.add("hidden");
+    if(rec.state==="recording") rec.stop();
+  });
+}
+async function runExam(){
+  exam=build(); answers=[];
+  for(let i=0;i<exam.length;i++){
+    const t=exam[i];
+    $("qno").textContent=`QUESTION ${t.no} / 11`;
+    $("redHead").textContent=t.label;
+    $("cap").textContent="Question "+t.no;
+    $("hint").textContent="";
+    if(t.dir||t.intro){
+      $("taskArea").innerHTML="";
+      setStage("Directions","listen"); $("hint").textContent="Ava의 안내를 들으세요.";
+      if(t.dir) await sayP(t.dir);
+      if(t.intro) await sayP(t.intro);
+    }
+    render(t);
+    if(t.read){
+      setStage("읽는 시간","");
+      await sayP(CUE_READ); beep();
+      $("hint").textContent="표를 잘 읽어 두세요. 질문이 이어서 나옵니다.";
+      await countdown(t.read,"",true);
+    }
+    if(t.prompt){
+      setStage("Listen","listen"); $("hint").textContent="질문을 잘 들으세요.";
+      await sayP(t.prompt);
+      if(t.twice){ await sleep(700); await sayP(t.prompt); }
+    }
+    if(t.prep){
+      setStage("준비 시간","");
+      await sayP(CUE_PREP); beep();
+      $("hint").textContent="말할 내용을 머릿속으로 정리하세요.";
+      await countdown(t.prep,"",true);
+    }
+    setStage("말하기","speak");
+    await sayP(CUE_SPEAK); beep(1100);
+    $("hint").textContent="영어로 말하세요. 시간이 되면 저절로 넘어가요.";
+    await recordFor(t);
+  }
+  finish();
+}
+
+/* ───────── 결과 ───────── */
+function finish(){
+  stream.getTracks().forEach(t=>t.stop());
+  $("s-exam").classList.add("hidden"); $("s-result").classList.remove("hidden");
+  const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  const heardAny=answers.some(a=>a.text.length>0);
+  const per=answers.map(a=>{
+    const t=a.t, s=analyze(a.text,a.sec);
+    if(t.kind==="read"){ const r=readAccuracy(t.text,a.text); return {s,acc:r.acc,miss:r.miss,fill:r.acc}; }
+    const target=Math.round(t.speak*1.6);
+    let extra=null, fill=Math.min(1,s.n/target);
+    if(t.kind==="pic"){
+      const low=a.text.toLowerCase(); const got=t.scene.words.filter(g=>g.some(w=>new RegExp("\\b"+w+"\\b").test(low)));
+      extra={got:got.length,total:t.scene.words.length, miss:t.scene.words.filter(g=>!got.includes(g)).map(g=>g[0])};
+      fill=Math.min(1, fill*0.6 + Math.min(1,got.length/4)*0.4);
+    }
+    return {s,target,fill,extra};
+  });
+  let top="";
+  if(!SR) top=`<div class="warn">이 브라우저는 글자 변환을 지원하지 않아요. <b>크롬</b>으로 열면 분석이 나옵니다. (녹음 듣기는 가능해요)</div>`;
+  else if(!heardAny) top=`<div class="warn">말소리를 글자로 바꾸지 못했어요. 마이크 소리가 작았거나 글자 변환이 막혔을 수 있어요. 녹음 듣기는 아래에서 가능합니다.</div>`;
+  else{
+    const rd=per.filter((p,i)=>answers[i].t.kind==="read"), oth=per.filter((p,i)=>answers[i].t.kind!=="read");
+    const readAcc=rd.length?rd.reduce((s,p)=>s+p.acc,0)/rd.length:0;
+    const fillAvg=oth.reduce((s,p)=>s+p.fill,0)/oth.length;
+    const score=Math.round(200*(0.2*readAcc+0.8*fillAvg)*0.85/10)*10;
+    const est=score>=160?"AL":score>=140?"IH":score>=130?"IM3":score>=110?"IM2":score>=90?"IM1":score>=60?"IL":"NH 이하";
+    const tips=[];
+    if(readAcc<0.85) tips.push("읽기(1~2번)에서 못 읽은 단어가 있어요. 아래 '다시 연습할 단어'를 소리 내어 연습해 보세요.");
+    if(fillAvg<0.7) tips.push("대답이 짧아요. 시간을 끝까지 채우도록, 이유와 예시를 한 문장씩 더 붙여 보세요.");
+    if(per.some((p,i)=>answers[i].t.kind==="pic"&&p.extra&&p.extra.got<3)) tips.push("사진 설명(3~4번)은 '누가, 어디서, 무엇을 하고 있는지'를 먼저 말하고 눈에 띄는 물건을 하나씩 말해 보세요.");
+    if(per.some((p,i)=>answers[i].t.kind==="op"&&p.s.n<70)) tips.push("11번은 '내 의견 → 이유 1 → 예시 → 이유 2 → 마무리' 순서로 말하면 60초가 채워져요.");
+    top=`<div class="warn" style="margin:14px 0">
+      <b>예상 참고 점수: 약 ${score}점 (${est})</b> · 목표 ${grade}<br>
+      읽기 정확도 ${Math.round(readAcc*100)}% · 말하기 분량 ${Math.round(fillAvg*100)}%<br>
+      <span class="muted">※ 읽은 단어가 얼마나 맞았는지와 말한 <b>양</b>만 보고 계산한 참고용이에요. 문법·발음·내용은 보지 못해서 실제 TOEIC Speaking 점수와 다를 수 있어요.</span>
+      ${tips.length?"<ul style='margin:8px 0 0 18px;padding:0'>"+tips.map(t=>"<li>"+t+"</li>").join("")+"</ul>":""}
+    </div>`;
+  }
+  const tot=answers.reduce((s,a)=>s+a.sec,0);
+  $("sum").textContent=`${$("name").value.trim()}님 · 목표 ${grade} · 11문제 · 말한 시간 ${Math.floor(tot/60)}분 ${tot%60}초`;
+  $("results").innerHTML=top+answers.map((a,i)=>{
+    const t=a.t,p=per[i];
+    let prompt=t.kind==="read"?t.text:t.kind==="pic"?"(사진 설명)":t.prompt;
+    let info="";
+    if(SR&&a.text){
+      if(t.kind==="read") info=`<div class="muted" style="margin-top:4px">읽기 정확도 <b class="${p.acc>=.85?"ok":"bad"}">${Math.round(p.acc*100)}%</b>${p.miss.length?` · 다시 연습할 단어: ${p.miss.slice(0,12).join(", ")}`:""}</div>`;
+      else info=`<div class="muted" style="margin-top:4px">${p.s.n}단어 · 분당 ${p.s.wpm}단어 · 연결어 ${p.s.conn}개 (목표 약 ${p.target}단어)</div>`;
+      if(p.extra) info+=`<div class="muted">그림 속 말한 것 ${p.extra.got}/${p.extra.total}${p.extra.miss.length?` · 안 말한 것: ${p.extra.miss.slice(0,5).join(", ")}`:""}</div>`;
+      info+=`<details><summary class="muted">내가 한 말 (글자 변환)</summary><div style="font-size:14px;line-height:1.6">${esc(a.text)}</div></details>`;
+    }
+    const pic=t.kind==="pic"?`<div class="picBox" style="max-width:260px">${t.scene.svg}</div>`:"";
+    return `<div class="res"><span class="tag">${t.no}번</span><span class="tag">${t.label}</span>${a.sec}초
+      <div class="muted" style="margin-top:6px">${prompt}</div>${pic}${info}<audio controls src="${a.url}"></audio></div>`;
+  }).join("");
+}
+$("againBtn").onclick=()=>location.reload();
+speechSynthesis.getVoices();
+speechSynthesis.onvoiceschanged = fillVoices;
+fillVoices();
+$("voiceSel").addEventListener("change",e=>{
+  try{localStorage.setItem("opicVoice",e.target.value);}catch(_){}
+});
+
+/* ───────── 회원 전용 ───────── */
+/* ───────── 회원 전용: MY CLASS 로그인 세션으로 확인 ───────── */
+(async()=>{
+  const gate=$("gate"), msg=$("gateMsg"), link=$("gateLink");
+  const lock=t=>{ msg.textContent=t; link.style.display="block"; };
+  try{
+    const cfg=window.NVEC_CONFIG;
+    const sb=supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session){ lock("회원 로그인이 필요해요."); return; }
+    const {data:p}=await sb.from("members").select("name,is_active").eq("id",session.user.id).maybeSingle();
+    if(!p||!p.is_active){ lock("등록된 회원만 사용할 수 있어요. 학원에 문의해 주세요."); return; }
+    gate.classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("name").value=p.name||""; refresh();
+  }catch(e){
+    lock("회원 확인 중 문제가 생겼어요. 새로고침(Ctrl+F5)해 주세요.");
+  }
+})();
+</script>
+</body>
+</html>
