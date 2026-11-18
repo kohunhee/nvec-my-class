@@ -211,10 +211,13 @@ async function loadResults(){
     $("tbl").classList.add("hidden"); $("dlCsv").disabled=$("dlTxt").disabled=true; return;
   }
   RES=data||[];
+  let MM={};
+  try{ const {data:ms}=await sb.from("members").select("id,member_id,name"); (ms||[]).forEach(m=>MM[m.id]=m); }catch(_){}
+  RES.forEach(r=>{ const m=MM[r.user_id]||{}; r.mid=m.member_id||""; r.shown=m.name||r.member_name||""; });
   $("rMsg").textContent=RES.length?`${RES.length}건`:"아직 저장된 결과가 없어요. 회원이 시험을 마치면 여기에 나타나요.";
   $("dlCsv").disabled=$("dlTxt").disabled=!RES.length;
   $("tbl").classList.toggle("hidden",!RES.length);
-  $("rows").innerHTML=RES.map((r,i)=>`<tr><td>${esc(new Date(r.created_at).toLocaleString("ko-KR"))}</td><td>${esc(r.member_name)}</td><td>${esc(r.age??"")}</td><td>${r.exam==="opic"?"오픽":"토스"}</td><td>${esc(r.goal||"")}</td><td>${r.completed?"✅":"중간에 그만둠"}</td><td>${esc(r.est_grade||"")}${r.est_score?" · "+r.est_score+"점":""}</td><td><details data-i="${i}"><summary>보기·듣기</summary><div class="dbody">불러오는 중…</div></details></td><td><button class="small" data-rep="${i}">결과표</button></td></tr>`).join("");
+  $("rows").innerHTML=RES.map((r,i)=>`<tr><td>${esc(new Date(r.created_at).toLocaleString("ko-KR"))}</td><td><b>${esc(r.shown)}</b><br><small class="muted">${esc(r.mid)}</small></td><td>${esc(r.age??"")}</td><td>${r.exam==="opic"?"오픽":"토스"}</td><td>${esc(r.goal||"")}</td><td>${r.completed?"✅":"중간에 그만둠"}</td><td>${esc(r.est_grade||"")}${r.est_score?" · "+r.est_score+"점":""}</td><td><details data-i="${i}"><summary>보기·듣기</summary><div class="dbody">불러오는 중…</div></details></td><td><button class="small" data-rep="${i}">결과표</button></td></tr>`).join("");
   document.querySelectorAll("#rows details").forEach(d=>d.addEventListener("toggle",()=>{ if(d.open&&!d.dataset.done){ d.dataset.done=1; fillDetail(d); } }));
   document.querySelectorAll("[data-rep]").forEach(b=>b.onclick=()=>openReport(+b.dataset.rep));
 }
@@ -230,14 +233,14 @@ async function fillDetail(d){
 $("reload").onclick=loadResults;
 const csvCell=v=>{ v=String(v??""); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
 $("dlCsv").onclick=()=>{
-  const head=["날짜","이름","나이","시험","목표","끝까지","예상등급","예상점수"];
-  const lines=[head.join(",")].concat(RES.map(r=>[new Date(r.created_at).toLocaleString("ko-KR"),r.member_name,r.age,r.exam==="opic"?"오픽":"토스",r.goal,r.completed?"예":"중간에 그만둠",r.est_grade,r.est_score].map(csvCell).join(",")));
+  const head=["날짜","이름","아이디","나이","시험","목표","끝까지","예상등급","예상점수"];
+  const lines=[head.join(",")].concat(RES.map(r=>[new Date(r.created_at).toLocaleString("ko-KR"),r.shown,r.mid,r.age,r.exam==="opic"?"오픽":"토스",r.goal,r.completed?"예":"중간에 그만둠",r.est_grade,r.est_score].map(csvCell).join(",")));
   save(`모의시험-결과-${today()}.csv`,lines.join("\r\n"));
 };
 $("dlTxt").onclick=()=>{
   save(`모의시험-결과-${today()}.txt`, RES.map(r=>{
     const ans=((r.detail||{}).answers||[]).map(a=>`  ${a.n}번 (${a.sec}초, ${a.words}단어) ${a.text||""}`).join("\n");
-    return `[${new Date(r.created_at).toLocaleString("ko-KR")}] ${r.member_name||""} (${r.age??""}세) · ${r.exam==="opic"?"오픽":"토스"} · 목표 ${r.goal||""} · ${r.completed?"끝까지":"중간에 그만둠"} · 예상 ${r.est_grade||""}${r.est_score?" "+r.est_score+"점":""}\n${ans}\n`;
+    return `[${new Date(r.created_at).toLocaleString("ko-KR")}] ${r.shown||r.member_name||""}${r.mid?" ("+r.mid+")":""} (${r.age??""}세) · ${r.exam==="opic"?"오픽":"토스"} · 목표 ${r.goal||""} · ${r.completed?"끝까지":"중간에 그만둠"} · 예상 ${r.est_grade||""}${r.est_score?" "+r.est_score+"점":""}\n${ans}\n`;
   }).join("\n"));
 };
 
@@ -323,7 +326,7 @@ function buildSheet(r,teacher){
   }).join("");
   return `<div class="sh-head"><div><b>NVEC 원어민어학원</b><small>NATIVE ENGLISH ACADEMY</small></div><div style="text-align:right;font-size:12px;color:#d7c49c">MOCK TEST REPORT</div></div>
   <div class="sh-title">${isO?"OPIc 모의시험 결과표":"TOEIC Speaking 모의시험 결과표"}</div>
-  <div class="sh-info"><div><span>이름</span>${esc(r.member_name||"")}</div><div><span>나이</span>${esc(r.age??"")}${r.age?"세":""}</div><div><span>시험일</span>${date}</div><div><span>응시 문항</span>${ans.length}문항${r.completed?"":" (중간 종료)"}</div></div>
+  <div class="sh-info"><div><span>이름</span>${esc(r.shown||r.member_name||"")}</div><div><span>나이</span>${esc(r.age??"")}${r.age?"세":""}</div><div><span>시험일</span>${date}</div><div><span>응시 문항</span>${ans.length}문항${r.completed?"":" (중간 종료)"}</div></div>
   <div class="sh-big">${big}</div>
   <h3>영역별 평가</h3>
   ${areas.map(a=>`<div class="area"><div class="nm"><span>${a.nm}</span><span>${a.v}점</span></div><div class="bar"><i style="width:${a.v}%"></i></div><p>${esc(a.note)} — ${esc(T[a.nm][tier(a.v)])}</p></div>`).join("")}
@@ -350,7 +353,7 @@ $("savePng").onclick=async()=>{
   try{
     const c=await html2canvas($("sheet"),{scale:2,backgroundColor:"#ffffff",useCORS:true});
     const a=document.createElement("a"); a.href=c.toDataURL("image/png");
-    a.download=`${CUR.member_name||"결과표"}-${CUR.exam==="opic"?"오픽":"토스"}-결과표-${today()}.png`;
+    a.download=`${CUR.shown||CUR.member_name||"결과표"}-${CUR.exam==="opic"?"오픽":"토스"}-결과표-${today()}.png`;
     document.body.appendChild(a); a.click(); a.remove();
     $("pngMsg").style.color="#18794e"; $("pngMsg").textContent="저장했어요. 다운로드 폴더에서 카카오톡으로 보내세요.";
   }catch(e){ $("pngMsg").style.color="#b23b3b"; $("pngMsg").textContent="이미지를 만들지 못했어요: "+(e.message||e); }
