@@ -338,12 +338,12 @@ const INTRO_TEXT = "Let's start the interview. Please introduce yourself. Tell m
 const SAMPLE_TEXT = "This is a sample question. It will not be scored. Please tell me about your favorite food and why you like it.";
 const SOUND_TEXT = "Hello. Welcome to the OPIc practice test. Can you hear my voice clearly? If you can, please click the next button.";
 const GRADE_HELP = {
-  IL:"Intermediate Low 목표 · 쉬운 문제 12문제 (실제 시험 난이도 1~2 기준)",
-  IM1:"Intermediate Mid 1 목표 · 15문제 (난이도 3 기준)",
-  IM2:"Intermediate Mid 2 목표 · 15문제 (난이도 4 기준)",
-  IM3:"Intermediate Mid 3 목표 · 15문제 (난이도 4 기준)",
-  IH:"Intermediate High 목표 · 15문제, 끝에 비교·의견 문제 2개 (난이도 5 기준)",
-  AL:"Advanced Low 목표 · 15문제, 끝에 비교·의견 문제 2개 (난이도 6 기준)"
+  IL:"Intermediate Low 목표 · 쉬운 문제 12문제 (난이도 2) · 실제 오픽처럼 최고 IM2까지 나와요",
+  IM1:"Intermediate Mid 1 목표 · 15문제 (난이도 3) · 최고 IM3까지 나와요",
+  IM2:"Intermediate Mid 2 목표 · 15문제 (난이도 4) · 최고 IH까지 나와요",
+  IM3:"Intermediate Mid 3 목표 · 15문제 (난이도 4) · 최고 IH까지 나와요",
+  IH:"Intermediate High 목표 · 15문제, 끝에 비교·의견 문제 2개 (난이도 5) · 최고 AL까지 나와요",
+  AL:"Advanced Low 목표 · 15문제, 끝에 비교·의견 문제 2개 (난이도 6) · 최고 AL까지 나와요"
 };
 
 /* ───────── 문제 은행 추가분 (최근 서베이·돌발·롤플레이 경향을 참고해 새로 쓴 연습 문제) ───────── */
@@ -594,6 +594,17 @@ function estimateGrade(avgWords){
   return "AL";
 }
 
+/* 실제 오픽처럼: 고른 난이도(level)에 따라 받을 수 있는 최고 등급이 정해져 있어요 */
+const GR_ORDER=["IL","IM1","IM2","IM3","IH","AL"];
+const GR_CAP={2:"IM2",3:"IM3",4:"IH",5:"AL",6:"AL"};
+function capGrade(raw,lv){
+  const m=raw.match(/^(IL|IM1|IM2|IM3|IH|AL)/);
+  if(!m) return {g:raw,capped:false};
+  const cap=GR_CAP[lv]||"AL";
+  if(GR_ORDER.indexOf(m[1])>GR_ORDER.indexOf(cap)) return {g:cap,capped:true,cap};
+  return {g:raw,capped:false};
+}
+
 /* 목소리 고르기: 자연스러운 목소리를 먼저 찾고, 직접 바꿀 수도 있어요 */
 function enVoices(){ return speechSynthesis.getVoices().filter(v=>/^en[-_]US/i.test(v.lang)); }
 function pickVoice(){
@@ -817,9 +828,10 @@ function finish(){
     if(sum("conn")/cnt<4) tips.push("because, but, so, for example 같은 연결어를 더 써 보세요.");
     if(sum("long")/sum("n")<0.12) tips.push("조금 더 다양한 단어(7글자 이상)를 써 보세요.");
     if(wpm && wpm<90) tips.push("말이 느린 편이에요. 중간에 오래 멈추지 않도록 연습해 보세요.");
-    window.__res={est:estimateGrade(avgW)};
+    const cg=capGrade(estimateGrade(avgW),level);
+    window.__res={est:cg.g};
     top = `<div class="warn" style="margin:14px 0">
-      <b>예상 참고 등급: ${estimateGrade(avgW)}</b> (목표: ${grade})<br>
+      <b>예상 참고 등급: ${cg.g}</b> (목표: ${grade})${cg.capped?" · 고른 난이도에서 받을 수 있는 가장 높은 등급이에요 (실제 오픽도 같아요)":""}<br>
       문제당 평균 ${avgW}단어 · 분당 ${wpm}단어 · 연결어 평균 ${(sum("conn")/cnt).toFixed(1)}개<br>
       <span class="muted">※ 말의 <b>양</b>만 보고 계산한 참고용이에요. 문법·발음·내용은 보지 못해서 진짜 오픽 등급과 다를 수 있어요. 자기소개(1번)는 점수에서 뺐습니다.</span>
       ${tips.length?"<ul style='margin:8px 0 0 18px;padding:0'>"+tips.map(t=>"<li>"+t+"</li>").join("")+"</ul>":""}
