@@ -491,10 +491,21 @@ function showAllQ(id){
   box.innerHTML='<details class="allq" style="margin-top:18px"><summary style="cursor:pointer;font-weight:800;padding:12px;border:2px solid var(--navy);border-radius:10px;text-align:center">📚 전체 문제 보기 <span style="font-weight:400;font-size:12px">(시험을 마친 회원만 볼 수 있어요)</span></summary><div style="margin-top:12px;font-size:14px;line-height:1.6">'+allQHtml()+'</div></details>';
   box.classList.remove("hidden");
 }
+async function uploadAnswer(a,i,base){
+  try{
+    if(!a.blob||a.blob.size<500) return null;
+    const ext=(a.blob.type||"").includes("mp4")?"m4a":"webm";
+    const path=`${window.__uid}/mock/${base}/q${i+1}.${ext}`;
+    const {error}=await window.__sb.storage.from("recordings").upload(path,a.blob,{contentType:a.blob.type||"audio/webm",upsert:false});
+    return error?null:path;
+  }catch(_){ return null; }
+}
 async function saveResult(done){
   try{
     if(!window.__sb||!window.__uid) return false;
-    const rows=answers.map((a,i)=>({n:i+1,type:a.q.type,topic:a.q.topic||"",q:a.q.text,sec:a.sec,words:analyze(a.text,a.sec).n,text:a.text}));
+    const base="opic-"+Date.now();
+    const paths=await Promise.all(answers.map((a,i)=>uploadAnswer(a,i,base)));
+    const rows=answers.map((a,i)=>({n:i+1,type:a.q.type,topic:a.q.topic||"",q:a.q.text,sec:a.sec,words:analyze(a.text,a.sec).n,conn:analyze(a.text,a.sec).conn,text:a.text,audio:paths[i]}));
     const {error}=await window.__sb.from("mock_results").insert({user_id:window.__uid,exam:"opic",member_name:$("name").value.trim(),age:parseInt($("age").value,10)||null,goal:grade,completed:done,est_grade:(window.__res||{}).est||null,est_score:null,detail:{answers:rows}});
     return !error;
   }catch(_){ return false; }

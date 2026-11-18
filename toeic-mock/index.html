@@ -416,10 +416,31 @@ function showAllQ(id){
   box.innerHTML='<details class="allq" style="margin-top:18px"><summary style="cursor:pointer;font-weight:800;padding:12px;border:2px solid var(--navy);border-radius:10px;text-align:center">📚 전체 문제 보기 <span style="font-weight:400;font-size:12px">(시험을 마친 회원만 볼 수 있어요)</span></summary><div style="margin-top:12px;font-size:14px;line-height:1.6">'+allQHtml()+'</div></details>';
   box.classList.remove("hidden");
 }
+async function uploadAnswer(a,i,base){
+  try{
+    if(!a.blob||a.blob.size<500) return null;
+    const ext=(a.blob.type||"").includes("mp4")?"m4a":"webm";
+    const path=`${window.__uid}/mock/${base}/q${i+1}.${ext}`;
+    const {error}=await window.__sb.storage.from("recordings").upload(path,a.blob,{contentType:a.blob.type||"audio/webm",upsert:false});
+    return error?null:path;
+  }catch(_){ return null; }
+}
 async function saveResult(done){
   try{
     if(!window.__sb||!window.__uid) return false;
-    const rows=answers.map(a=>({n:a.t.no,type:a.t.kind,sec:a.sec,words:analyze(a.text,a.sec).n,text:a.text}));
+    const base="toeic-"+Date.now();
+    const paths=await Promise.all(answers.map((a,i)=>uploadAnswer(a,i,base)));
+    const rows=answers.map((a,i)=>{
+      const t=a.t, s2=analyze(a.text,a.sec), row={n:t.no,type:t.kind,sec:a.sec,words:s2.n,conn:s2.conn,text:a.text,audio:paths[i]};
+      if(t.kind==="read"){ const r=readAccuracy(t.text,a.text); row.acc=Math.round(r.acc*100); row.miss=r.miss.slice(0,15); row.prompt=t.text; }
+      else{
+        row.prompt=t.kind==="pic"?("사진: "+t.scene.key):t.prompt;
+        let fill=Math.min(1,s2.n/Math.round(t.speak*1.6));
+        if(t.kind==="pic"){ const low=a.text.toLowerCase(); const got=t.scene.words.filter(g=>g.some(w=>new RegExp("\b"+w+"\b").test(low))).length; row.got=got; row.total=t.scene.words.length; fill=Math.min(1,fill*0.6+Math.min(1,got/4)*0.4); }
+        row.fill=Math.round(fill*100);
+      }
+      return row;
+    });
     const r=window.__res||{};
     const {error}=await window.__sb.from("mock_results").insert({user_id:window.__uid,exam:"toeic",member_name:$("name").value.trim(),age:parseInt($("age").value,10)||null,goal:grade,completed:done,est_grade:r.est||null,est_score:r.score||null,detail:{answers:rows}});
     return !error;

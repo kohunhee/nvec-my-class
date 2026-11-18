@@ -8,26 +8,79 @@
 :root{--navy:#0c1b33;--gold:#b6924b;--line:#e6e0d5}
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,"Noto Sans KR",sans-serif;background:#f5f3ee;color:#172033}
-header{background:var(--navy);color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
-header b{font-size:18px}header a{color:#d7c49c;font-size:14px;text-decoration:none}
-main{max-width:960px;margin:auto;padding:24px 16px 70px}
+header.top{background:var(--navy);color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+header.top b{font-size:18px}header.top a{color:#d7c49c;font-size:14px;text-decoration:none}
+main{max-width:1000px;margin:auto;padding:24px 16px 70px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px}
 h1{font-size:22px;margin:0 0 8px}h2{font-size:18px;margin:0 0 10px}
 .muted{color:#6c7280;font-size:14px;line-height:1.6}
 button,.btn{font-family:inherit;cursor:pointer;border:0;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:15px;padding:12px 18px;text-decoration:none;display:inline-block}
 button.sec{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+button.small{padding:7px 12px;font-size:13px}
+button:disabled{opacity:.4;cursor:not-allowed}
 .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
-th,td{padding:8px 10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
-th{background:#faf7f0;white-space:nowrap}
+table.list{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+.list th,.list td{padding:8px 10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+.list th{background:#faf7f0;white-space:nowrap}
 .hidden{display:none!important}
 .msg{margin-top:10px;font-weight:700}
 details{margin:2px 0}
 pre{white-space:pre-wrap;font-size:13px;background:#faf7f0;padding:10px;border-radius:8px;margin:6px 0}
+.ans{border-top:1px solid #eee;padding:8px 0}
+.ans audio{width:100%;max-width:420px;display:block;margin-top:4px}
+/* 결과표 창 */
+#repWrap{position:fixed;inset:0;background:rgba(12,27,51,.7);z-index:50;overflow:auto;padding:20px 10px}
+.repBox{max-width:780px;margin:auto;background:#eee;border-radius:14px;padding:14px}
+.repTools{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px}
+.repTools textarea{width:100%;border:1px solid #d8d8d8;border-radius:8px;padding:10px;font-size:14px;font-family:inherit}
+/* 결과표 본문 */
+#sheet{background:#fff;color:#172033;width:100%;max-width:740px;margin:auto;font-size:14px;line-height:1.6}
+#sheet .sh-head{background:var(--navy);color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
+#sheet .sh-head b{font-size:20px}
+#sheet .sh-head small{display:block;color:#d7c49c;letter-spacing:2px;font-size:11px;margin-top:2px}
+#sheet .sh-title{padding:16px 22px 6px;font-size:22px;font-weight:800;color:var(--navy)}
+#sheet .sh-info{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:8px 22px;border:1px solid #ddd}
+#sheet .sh-info div{padding:8px 10px;border-right:1px solid #ddd;font-size:13px}
+#sheet .sh-info div:last-child{border-right:0}
+#sheet .sh-info span{display:block;color:#6c7280;font-size:11px}
+#sheet .sh-big{margin:14px 22px;padding:16px;background:#faf7f0;border:2px solid var(--gold);border-radius:12px;text-align:center}
+#sheet .sh-big .lv{font-size:44px;font-weight:900;color:var(--navy);line-height:1.1}
+#sheet .sh-big .sub{color:#6c7280;font-size:13px}
+#sheet .ladder{display:flex;margin:12px auto 0;max-width:520px}
+#sheet .ladder i{flex:1;font-style:normal;padding:7px 0;font-size:13px;font-weight:700;border:1px solid #ddd;margin-left:-1px;background:#fff;color:#888}
+#sheet .ladder i.on{background:var(--navy);color:#fff;border-color:var(--navy);transform:scale(1.12);z-index:1;position:relative}
+#sheet .scale{position:relative;height:18px;border-radius:9px;background:linear-gradient(90deg,#d9534f,#f0ad4e 40%,#5cb85c 80%);margin:18px auto 4px;max-width:520px}
+#sheet .scale u{position:absolute;top:-6px;width:4px;height:30px;background:var(--navy);border-radius:2px;text-decoration:none}
+#sheet .scale-n{position:relative;height:16px;max-width:520px;margin:0 auto;font-size:11px;color:#6c7280}#sheet .scale-n span{position:absolute;transform:translateX(-50%);white-space:nowrap}#sheet .scale-n span:first-child{transform:none}#sheet .scale-n span:last-child{transform:translateX(-100%)}
+#sheet h3{margin:16px 22px 6px;font-size:16px;color:var(--navy);border-left:4px solid var(--gold);padding-left:8px}
+#sheet .area{margin:6px 22px;padding:8px 0;border-bottom:1px dashed #e3e3e3}
+#sheet .area .nm{display:flex;justify-content:space-between;font-weight:700}
+#sheet .bar{height:10px;background:#eee;border-radius:6px;overflow:hidden;margin:4px 0}
+#sheet .bar i{display:block;height:100%;background:var(--gold)}
+#sheet .area p{margin:2px 0 0;color:#444;font-size:13px}
+#sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 22px}
+#sheet .two .bx{border:1px solid #ddd;border-radius:10px;padding:10px 12px}
+#sheet .two .bx b{display:block;margin-bottom:4px;color:var(--navy)}
+#sheet .two ul{margin:0;padding-left:18px;font-size:13px}
+#sheet table.q{width:calc(100% - 44px);margin:6px 22px;border-collapse:collapse;font-size:12.5px}
+#sheet table.q th,#sheet table.q td{border:1px solid #ddd;padding:5px 7px;text-align:left}
+#sheet table.q th{background:#faf7f0}
+#sheet .tc{margin:8px 22px;border:1px solid #ddd;border-radius:10px;padding:10px 12px;min-height:56px;white-space:pre-wrap;font-size:13.5px}
+#sheet .foot{margin:14px 22px 18px;color:#7a7f8a;font-size:11.5px;line-height:1.5}
+@media(max-width:600px){#sheet .sh-info{grid-template-columns:1fr 1fr}#sheet .two{grid-template-columns:1fr}}
+@media print{
+  body{background:#fff}
+  body>*:not(#repWrap){display:none!important}
+  #repWrap{position:static!important;background:#fff!important;padding:0!important;overflow:visible!important}
+  .repBox{background:#fff!important;padding:0!important;max-width:none!important}
+  .repTools{display:none!important}
+  #sheet{max-width:none!important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
 </head>
 <body>
-<header><b>오픽·토스 관리</b><a href="./">← 관리자 화면으로</a></header>
+<header class="top"><b>오픽·토스 관리</b><a href="./">← 관리자 화면으로</a></header>
 <main>
 <section id="lock" class="panel">
   <h1>🔒 관리자 확인 중…</h1>
@@ -48,22 +101,41 @@ pre{white-space:pre-wrap;font-size:13px;background:#faf7f0;padding:10px;border-r
 
   <section class="panel">
     <h2>📊 학생 시험 결과</h2>
-    <p class="muted">학생이 오픽·토스 시험을 마치면(또는 중간에 그만두면) 자동으로 저장돼요. 최근 500건까지 보여요.</p>
+    <p class="muted">학생이 시험을 마치면(또는 중간에 그만두면) 결과와 <b>목소리 녹음</b>이 자동으로 저장돼요. 「보기」에서 녹음을 듣고, 「결과표」로 회원에게 보낼 결과표를 만들 수 있어요. 최근 500건까지 보여요.</p>
     <div class="row">
       <button class="sec" id="reload">새로고침</button>
       <button id="dlCsv" disabled>결과 엑셀(CSV)로 받기</button>
       <button id="dlTxt" class="sec" disabled>결과 글 파일(.txt)로 받기</button>
     </div>
     <p class="msg" id="rMsg"></p>
-    <div style="overflow-x:auto"><table id="tbl" class="hidden"><thead><tr><th>날짜</th><th>이름</th><th>나이</th><th>시험</th><th>목표</th><th>끝까지</th><th>예상 참고</th><th>자세히</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div style="overflow-x:auto"><table id="tbl" class="list hidden"><thead><tr><th>날짜</th><th>이름</th><th>나이</th><th>시험</th><th>목표</th><th>끝까지</th><th>예상 참고</th><th>녹음·내용</th><th>결과표</th></tr></thead><tbody id="rows"></tbody></table></div>
   </section>
 </div>
 </main>
+
+<!-- 결과표 창 -->
+<div id="repWrap" class="hidden">
+  <div class="repBox">
+    <div class="repTools">
+      <b>회원에게 보낼 결과표</b>
+      <p class="muted" style="margin:4px 0 8px">아래 「선생님 한마디」를 적으면 결과표에 바로 들어가요. 다 되면 이미지로 저장해서 카카오톡으로 보내거나, PDF로 저장해 주세요.</p>
+      <textarea id="tcText" rows="2" placeholder="선생님 한마디 (예: 한 달 사이 말하는 양이 눈에 띄게 늘었어요. 이대로 꾸준히 해 봐요!)"></textarea>
+      <div class="row">
+        <button id="savePng">이미지(PNG)로 저장</button>
+        <button id="printBtn" class="sec">인쇄 / PDF 저장</button>
+        <button id="repClose" class="sec">닫기</button>
+      </div>
+      <p class="msg" id="pngMsg"></p>
+    </div>
+    <div id="sheet"></div>
+  </div>
+</div>
 
 <iframe id="fo" class="hidden" title="opic"></iframe>
 <iframe id="ft" class="hidden" title="toeic"></iframe>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="../config.js"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -129,22 +201,31 @@ $("dlOpic").onclick=()=>dlQ("opic"); $("dlToeic").onclick=()=>dlQ("toeic");
 
 /* ───── 학생 시험 결과 ───── */
 let RES=[];
+const KIND={read:"글 읽기",pic:"사진 설명",resp:"질문 대답",info:"정보 보고 대답",op:"의견 말하기"};
 async function loadResults(){
   $("rMsg").style.color="#172033"; $("rMsg").textContent="불러오는 중…";
   const {data,error}=await sb.from("mock_results").select("*").order("created_at",{ascending:false}).limit(500);
   if(error){
     $("rMsg").style.color="#b23b3b";
-    $("rMsg").textContent="결과 표가 아직 없어요. 안내서의 '9번 SQL'을 Supabase에서 한 번 실행해 주세요. ("+error.message+")";
+    $("rMsg").textContent="결과를 불러오지 못했어요. ("+error.message+")";
     $("tbl").classList.add("hidden"); $("dlCsv").disabled=$("dlTxt").disabled=true; return;
   }
   RES=data||[];
-  $("rMsg").textContent=RES.length?`${RES.length}건`:"아직 저장된 결과가 없어요.";
+  $("rMsg").textContent=RES.length?`${RES.length}건`:"아직 저장된 결과가 없어요. 회원이 시험을 마치면 여기에 나타나요.";
   $("dlCsv").disabled=$("dlTxt").disabled=!RES.length;
   $("tbl").classList.toggle("hidden",!RES.length);
-  $("rows").innerHTML=RES.map((r,i)=>{
-    const ans=((r.detail||{}).answers||[]).map(a=>`${a.n}번 · ${a.sec}초 · ${a.words}단어\n${a.text||""}`).join("\n\n");
-    return `<tr><td>${esc(new Date(r.created_at).toLocaleString("ko-KR"))}</td><td>${esc(r.member_name)}</td><td>${esc(r.age??"")}</td><td>${r.exam==="opic"?"오픽":"토스"}</td><td>${esc(r.goal||"")}</td><td>${r.completed?"✅":"중간에 그만둠"}</td><td>${esc(r.est_grade||"")}${r.est_score?" · "+r.est_score+"점":""}</td><td><details><summary>보기</summary><pre>${esc(ans)||"내용 없음"}</pre></details></td></tr>`;
-  }).join("");
+  $("rows").innerHTML=RES.map((r,i)=>`<tr><td>${esc(new Date(r.created_at).toLocaleString("ko-KR"))}</td><td>${esc(r.member_name)}</td><td>${esc(r.age??"")}</td><td>${r.exam==="opic"?"오픽":"토스"}</td><td>${esc(r.goal||"")}</td><td>${r.completed?"✅":"중간에 그만둠"}</td><td>${esc(r.est_grade||"")}${r.est_score?" · "+r.est_score+"점":""}</td><td><details data-i="${i}"><summary>보기·듣기</summary><div class="dbody">불러오는 중…</div></details></td><td><button class="small" data-rep="${i}">결과표</button></td></tr>`).join("");
+  document.querySelectorAll("#rows details").forEach(d=>d.addEventListener("toggle",()=>{ if(d.open&&!d.dataset.done){ d.dataset.done=1; fillDetail(d); } }));
+  document.querySelectorAll("[data-rep]").forEach(b=>b.onclick=()=>openReport(+b.dataset.rep));
+}
+async function fillDetail(d){
+  const r=RES[+d.dataset.i], ans=(r.detail||{}).answers||[], paths=ans.map(a=>a.audio).filter(Boolean);
+  let urls={};
+  if(paths.length){ try{ const {data}=await sb.storage.from("recordings").createSignedUrls(paths,3600); (data||[]).forEach(x=>{ if(x.signedUrl) urls[x.path]=x.signedUrl; }); }catch(_){} }
+  d.querySelector(".dbody").innerHTML=ans.map(a=>{
+    const au=a.audio?(urls[a.audio]?`<audio controls src="${urls[a.audio]}"></audio>`:`<span class="muted">녹음 보관 기간이 지났어요</span>`):`<span class="muted">녹음 없음</span>`;
+    return `<div class="ans"><b>${a.n}번</b> ${esc(KIND[a.type]||a.type||"")} · ${a.sec}초 · ${a.words}단어${a.acc!=null?" · 읽기 정확도 "+a.acc+"%":""}${au}<pre>${esc(a.text||"(글자 변환 없음)")}</pre></div>`;
+  }).join("")||"내용 없음";
 }
 $("reload").onclick=loadResults;
 const csvCell=v=>{ v=String(v??""); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
@@ -158,6 +239,121 @@ $("dlTxt").onclick=()=>{
     const ans=((r.detail||{}).answers||[]).map(a=>`  ${a.n}번 (${a.sec}초, ${a.words}단어) ${a.text||""}`).join("\n");
     return `[${new Date(r.created_at).toLocaleString("ko-KR")}] ${r.member_name||""} (${r.age??""}세) · ${r.exam==="opic"?"오픽":"토스"} · 목표 ${r.goal||""} · ${r.completed?"끝까지":"중간에 그만둠"} · 예상 ${r.est_grade||""}${r.est_score?" "+r.est_score+"점":""}\n${ans}\n`;
   }).join("\n"));
+};
+
+/* ───── 결과표 만들기 ───── */
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+const clamp=v=>Math.max(0,Math.min(100,Math.round(v)));
+const tier=v=>v>=75?"hi":v>=45?"mid":"low";
+const OPIC_LV=["IL","IM1","IM2","IM3","IH","AL"];
+const TOEIC_BANDS=[["IL",60],["IM1",90],["IM2",110],["IM3",130],["IH",140],["AL",160]];
+const TXT={
+  opic:{
+    "분량":{hi:"한 문제에 충분히 길게 말하고 있어요.",mid:"조금 더 길게 이어 말해 보세요. 이유와 예시를 한 문장씩 더하면 좋아요.",low:"다음 목표: 한 문제를 60초, 70단어 이상 말해 보기."},
+    "속도":{hi:"말의 속도가 자연스러워요.",mid:"멈추지 않고 이어 말하는 연습을 조금 더 해 보세요.",low:"다음 목표: 멈추는 시간을 줄이고 분당 90단어 이상 말해 보기."},
+    "문장 연결":{hi:"because, but, for example 같은 연결어를 잘 쓰고 있어요.",mid:"연결어를 한두 개 더 써 보세요.",low:"다음 목표: 문제마다 because, so, for example을 하나씩 넣어 보기."},
+    "어휘":{hi:"다양한 단어를 사용하고 있어요.",mid:"조금 더 긴 단어를 섞어 말해 보세요.",low:"다음 목표: 새 단어를 문제마다 1개씩 넣어 말해 보기."},
+    "끝까지 말하기":{hi:"대부분의 문제에서 충분한 시간 동안 말했어요.",mid:"짧게 끝난 문제가 몇 개 있어요. 조금만 더 이어 말해 보세요.",low:"다음 목표: 모든 문제를 30초 이상 말해 보기."}
+  },
+  toeic:{
+    "글 읽기 (1~2번)":{hi:"또박또박 정확하게 읽었어요.",mid:"몇 단어를 놓쳤어요. 놓친 단어를 소리 내어 연습해 보세요.",low:"다음 목표: 글을 3번 소리 내어 읽고 모르는 단어 발음 확인하기."},
+    "사진 설명 (3~4번)":{hi:"사진 속 사람과 물건을 잘 설명했어요.",mid:"사진 속 물건을 한두 개 더 말해 보세요.",low:"다음 목표: '누가, 어디서, 무엇을 하는지' 순서로 말하기."},
+    "질문 대답 (5~7번)":{hi:"질문에 바로, 이유까지 대답했어요.",mid:"대답 뒤에 이유를 한 문장 더해 보세요.",low:"다음 목표: 질문에 먼저 대답하고 'because'로 이유 붙이기."},
+    "정보 보고 대답 (8~10번)":{hi:"표에서 필요한 정보를 잘 찾아 말했어요.",mid:"시간·장소·사람을 빠짐없이 말해 보세요.",low:"다음 목표: 질문이 묻는 정보를 표에서 찾아 순서대로 말하기."},
+    "의견 말하기 (11번)":{hi:"의견과 이유를 길게 말했어요.",mid:"예시를 하나 더 들어 보세요.",low:"다음 목표: 의견 → 이유 → 예시 순서로 60초 말하기."}
+  }
+};
+function areasOf(r){
+  const ans=(r.detail||{}).answers||[];
+  if(r.exam==="opic"){
+    const sc=ans.length>1?ans.slice(1):ans;
+    const words=sc.map(a=>a.words||0), secs=sc.map(a=>a.sec||0);
+    const wpms=sc.filter(a=>a.sec>0).map(a=>(a.words||0)/a.sec*60);
+    const allW=(sc.map(a=>a.text||"").join(" ").toLowerCase().match(/[a-z']+/g)||[]);
+    const longR=allW.length?allW.filter(w=>w.length>=7).length/allW.length:0;
+    const conn=sc.map(a=>a.conn||0);
+    const longPct=sc.length?sc.filter(a=>a.sec>=30).length/sc.length*100:0;
+    return [
+      {nm:"분량",v:clamp(avg(words)/130*100),note:`문제당 평균 ${Math.round(avg(words))}단어`},
+      {nm:"속도",v:clamp(avg(wpms)/120*100),note:`분당 평균 ${Math.round(avg(wpms))}단어`},
+      {nm:"문장 연결",v:clamp(avg(conn)/6*100),note:`연결어 평균 ${avg(conn).toFixed(1)}개`},
+      {nm:"어휘",v:clamp(longR/0.18*100),note:`긴 단어(7글자 이상) ${Math.round(longR*100)}%`},
+      {nm:"끝까지 말하기",v:clamp(longPct),note:`30초 이상 말한 문제 ${Math.round(longPct)}%`}
+    ];
+  }
+  const by=(f)=>ans.filter(f);
+  const fillAvg=l=>clamp(avg(l.map(a=>a.fill??0)));
+  const rd=by(a=>a.type==="read");
+  return [
+    {nm:"글 읽기 (1~2번)",v:clamp(avg(rd.map(a=>a.acc??0))),note:"읽은 글과 맞은 정도"},
+    {nm:"사진 설명 (3~4번)",v:fillAvg(by(a=>a.type==="pic")),note:"말한 양과 사진 속 단어"},
+    {nm:"질문 대답 (5~7번)",v:fillAvg(by(a=>a.type==="resp")),note:"시간 안에 말한 양"},
+    {nm:"정보 보고 대답 (8~10번)",v:fillAvg(by(a=>a.type==="info")),note:"시간 안에 말한 양"},
+    {nm:"의견 말하기 (11번)",v:fillAvg(by(a=>a.type==="op")),note:"시간 안에 말한 양"}
+  ];
+}
+function buildSheet(r,teacher){
+  const areas=areasOf(r), T=TXT[r.exam], ans=(r.detail||{}).answers||[];
+  const isO=r.exam==="opic";
+  const d=new Date(r.created_at);
+  const date=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
+  const sorted=areas.slice().sort((a,b)=>b.v-a.v);
+  const good=sorted.filter(a=>a.v>=45).slice(0,2).map(a=>T[a.nm][tier(a.v)==="hi"?"hi":"mid"]);
+  const goals=sorted.slice().reverse().filter(a=>a.v<75).slice(0,3).map(a=>T[a.nm][a.v<45?"low":"mid"]);
+  if(!good.length) good.push("끝까지 시험을 마친 것만으로도 큰 한 걸음이에요. 다음에는 더 편하게 말할 수 있을 거예요.");
+  if(!goals.length) goals.push("지금처럼 꾸준히 연습하면서 더 어려운 주제에도 도전해 보세요.");
+  let big="";
+  if(isO){
+    const g=(r.est_grade||"").match(/^(IL|IM1|IM2|IM3|IH|AL)/); const on=g?g[1]:"";
+    big=`<div class="sub">예상 참고 등급</div><div class="lv">${esc(on||r.est_grade||"-")}</div>
+      <div class="ladder">${OPIC_LV.map(l=>`<i class="${l===on?"on":""}">${l}</i>`).join("")}</div>
+      <div class="sub" style="margin-top:8px">목표 등급 ${esc(r.goal||"-")}${on&&r.goal?(OPIC_LV.indexOf(on)>=OPIC_LV.indexOf(r.goal)?" · 목표 달성! 🎉":" · 목표까지 "+(OPIC_LV.indexOf(r.goal)-OPIC_LV.indexOf(on))+"단계"):""}</div>`;
+  }else{
+    const sc=r.est_score||0, pct=Math.min(100,sc/200*100);
+    const band=([...TOEIC_BANDS].reverse().find(b=>sc>=b[1])||["NH 이하"])[0];
+    big=`<div class="sub">예상 참고 점수 (200점 만점)</div><div class="lv">${sc}<span style="font-size:20px"> 점</span></div>
+      <div class="sub">예상 등급 ${esc(band)} · 목표 ${esc(r.goal||"-")}</div>
+      <div class="scale"><u style="left:calc(${pct}% - 2px)"></u></div>
+      <div class="scale-n">${[[0,"0"],[60,"60"],[110,"110"],[130,"130"],[160,"160 AL"],[200,"200"]].map(x=>`<span style="left:${x[0]/2}%">${x[1]}</span>`).join("")}</div>`;
+  }
+  const rows=ans.map(a=>{
+    const kind=isO?(a.type||""):(KIND[a.type]||"");
+    const extra=isO?`${a.words}단어`:(a.type==="read"?`정확도 ${a.acc??0}%`:`${a.words}단어`);
+    return `<tr><td>${a.n}</td><td>${esc(kind)}</td><td>${a.sec}초</td><td>${extra}</td></tr>`;
+  }).join("");
+  return `<div class="sh-head"><div><b>NVEC 원어민어학원</b><small>NATIVE ENGLISH ACADEMY</small></div><div style="text-align:right;font-size:12px;color:#d7c49c">MOCK TEST REPORT</div></div>
+  <div class="sh-title">${isO?"OPIc 모의시험 결과표":"TOEIC Speaking 모의시험 결과표"}</div>
+  <div class="sh-info"><div><span>이름</span>${esc(r.member_name||"")}</div><div><span>나이</span>${esc(r.age??"")}${r.age?"세":""}</div><div><span>시험일</span>${date}</div><div><span>응시 문항</span>${ans.length}문항${r.completed?"":" (중간 종료)"}</div></div>
+  <div class="sh-big">${big}</div>
+  <h3>영역별 평가</h3>
+  ${areas.map(a=>`<div class="area"><div class="nm"><span>${a.nm}</span><span>${a.v}점</span></div><div class="bar"><i style="width:${a.v}%"></i></div><p>${esc(a.note)} — ${esc(T[a.nm][tier(a.v)])}</p></div>`).join("")}
+  <h3>종합 의견</h3>
+  <div class="two"><div class="bx"><b>👍 잘한 점</b><ul>${good.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div><div class="bx"><b>🎯 다음 목표</b><ul>${goals.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div></div>
+  <h3>문항별 기록</h3>
+  <table class="q"><thead><tr><th>번호</th><th>유형</th><th>말한 시간</th><th>결과</th></tr></thead><tbody>${rows||'<tr><td colspan="4">기록 없음</td></tr>'}</tbody></table>
+  <h3>선생님 한마디</h3>
+  <div class="tc">${esc(teacher)||"　"}</div>
+  <div class="foot">※ 이 결과표는 NVEC 모의시험의 참고 자료예요. 말한 양과 ${isO?"속도·연결어·어휘":"읽기 정확도"} 등을 바탕으로 계산한 예상이라, 실제 ${isO?"OPIc":"TOEIC Speaking"} 공식 성적과는 다를 수 있어요. 발음·문법·내용은 선생님이 함께 확인해 드립니다.</div>`;
+}
+let CUR=null;
+function drawSheet(){ if(CUR) $("sheet").innerHTML=buildSheet(CUR,$("tcText").value.trim()); }
+function openReport(i){
+  CUR=RES[i]; $("tcText").value=""; $("pngMsg").textContent="";
+  drawSheet(); $("repWrap").classList.remove("hidden"); document.body.style.overflow="hidden";
+}
+$("tcText").oninput=drawSheet;
+$("repClose").onclick=()=>{ $("repWrap").classList.add("hidden"); document.body.style.overflow=""; };
+$("printBtn").onclick=()=>window.print();
+$("savePng").onclick=async()=>{
+  if(!window.html2canvas){ $("pngMsg").style.color="#b23b3b"; $("pngMsg").textContent="이미지 도구를 불러오지 못했어요. '인쇄 / PDF 저장'을 써 주세요."; return; }
+  $("pngMsg").style.color="#172033"; $("pngMsg").textContent="이미지를 만드는 중…";
+  try{
+    const c=await html2canvas($("sheet"),{scale:2,backgroundColor:"#ffffff",useCORS:true});
+    const a=document.createElement("a"); a.href=c.toDataURL("image/png");
+    a.download=`${CUR.member_name||"결과표"}-${CUR.exam==="opic"?"오픽":"토스"}-결과표-${today()}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    $("pngMsg").style.color="#18794e"; $("pngMsg").textContent="저장했어요. 다운로드 폴더에서 카카오톡으로 보내세요.";
+  }catch(e){ $("pngMsg").style.color="#b23b3b"; $("pngMsg").textContent="이미지를 만들지 못했어요: "+(e.message||e); }
 };
 </script>
 </body>
