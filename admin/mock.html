@@ -255,11 +255,11 @@ const OPIC_LV=["IL","IM1","IM2","IM3","IH","AL"];
 const TOEIC_BANDS=[["IL",60],["IM1",90],["IM2",110],["IM3",130],["IH",140],["AL",160]];
 const TXT={
   opic:{
+    "듣기 이해":{hi:"질문을 잘 듣고 주제에 맞게 대답했어요.",mid:"질문의 핵심 단어(주제·시간·장소)를 먼저 잡고 대답을 시작해 보세요.",low:"다음 목표: 다시 듣기는 1번뿐이에요. 처음 들을 때 핵심 단어 2개를 기억해 두고, 대답 첫 문장에 그 단어를 넣어 보기."},
+    "유창성":{hi:"멈춤이 적고 자연스럽게 이어 말해요.",mid:"속도가 좋아지고 있어요. 문장 사이를 and, so, because로 이어 가 보세요.",low:"다음 목표: 완벽하게 말하려 하지 말고 쉬운 말로 계속 이어 가기. 분당 90단어가 목표예요."},
     "분량":{hi:"한 문제에 충분히 길게 말하고 있어요.",mid:"조금 더 길게 이어 말해 보세요. 이유와 예시를 한 문장씩 더하면 좋아요.",low:"다음 목표: 한 문제를 60초, 70단어 이상 말해 보기."},
-    "속도":{hi:"말의 속도가 자연스러워요.",mid:"멈추지 않고 이어 말하는 연습을 조금 더 해 보세요.",low:"다음 목표: 멈추는 시간을 줄이고 분당 90단어 이상 말해 보기."},
-    "문장 연결":{hi:"because, but, for example 같은 연결어를 잘 쓰고 있어요.",mid:"연결어를 한두 개 더 써 보세요.",low:"다음 목표: 문제마다 because, so, for example을 하나씩 넣어 보기."},
-    "어휘":{hi:"다양한 단어를 사용하고 있어요.",mid:"조금 더 긴 단어를 섞어 말해 보세요.",low:"다음 목표: 새 단어를 문제마다 1개씩 넣어 말해 보기."},
-    "끝까지 말하기":{hi:"대부분의 문제에서 충분한 시간 동안 말했어요.",mid:"짧게 끝난 문제가 몇 개 있어요. 조금만 더 이어 말해 보세요.",low:"다음 목표: 모든 문제를 30초 이상 말해 보기."}
+    "시제·전개":{hi:"과거·현재·미래를 오가며 이야기를 전개해요.",mid:"경험을 물으면 과거형(was, went, had)으로 이야기해 보세요.",low:"다음 목표: 경험 질문에는 '언제 → 무슨 일 → 느낌' 순서로 과거형 문장 3개 말하기."},
+    "문장 연결":{hi:"because, but, for example 같은 연결어를 잘 쓰고 있어요.",mid:"연결어를 한두 개 더 써 보세요.",low:"다음 목표: 문제마다 because, so, for example을 하나씩 넣어 보기."}
   },
   toeic:{
     "글 읽기 (1~2번)":{hi:"또박또박 정확하게 읽었어요.",mid:"몇 단어를 놓쳤어요. 놓친 단어를 소리 내어 연습해 보세요.",low:"다음 목표: 글을 3번 소리 내어 읽고 모르는 단어 발음 확인하기."},
@@ -286,6 +286,28 @@ function deviceOf(ua){
   const br=/KAKAOTALK/i.test(ua)?"카카오톡 안":/SamsungBrowser/i.test(ua)?"삼성 인터넷":/Edg\//.test(ua)?"엣지":/Whale/i.test(ua)?"웨일":/CriOS/.test(ua)?"iOS 크롬":/Chrome/.test(ua)?"크롬":/Safari/.test(ua)?"사파리":"기타";
   return os+" · "+br;
 }
+const STOP=new Set("the a an and or of to in on at for with about you your me my i is are was were be do does did tell what how why when where which who it that this these those like have has had can could would will please describe explain give some any as from by we they he she them their our there here so if than then more most very also just one two three four been used usually often always things thing way lot much many".split(" "));
+const PAST=/\b(was|were|did|had|went|saw|made|took|got|came|ate|met|bought|gave|found|felt|thought|knew|began|started|visited|\w{3,}ed)\b/gi, FUT=/\b(will|gonna|going to|plan to|would like to|want to)\b/gi, PRES=/\b(am|is|are|do|does|like|love|usually|often|always|every|my|have)\b/gi;
+const EXPQ=/(memorable|a time when|a time you|experience|happened|had a problem|last time|first time|in the past|changed|ago)/i;
+const FILL=/\b(um+|uh+|erm|er)\b/gi;
+function listenStats(sc){
+  const withQ=sc.filter(a=>a.q&&(a.words||0)>0);
+  if(!withQ.length) return null;
+  let on=0;
+  withQ.forEach(a=>{
+    const qw=(a.q.toLowerCase().match(/[a-z']+/g)||[]).filter(w=>w.length>=4&&!STOP.has(w));
+    const aw=(a.text||"").toLowerCase();
+    if(qw.some(w=>aw.includes(w.slice(0,Math.max(4,w.length-2))))) on++;
+  });
+  const exp=withQ.filter(a=>EXPQ.test(a.q)), expPast=exp.filter(a=>((a.text||"").match(PAST)||[]).length>=2).length;
+  const replays=sc.filter(a=>a.replay).length;
+  return {onTopic:on,n:withQ.length,exp:exp.length,expPast,replays};
+}
+function tenseStats(sc){
+  const t=sc.map(a=>a.text||"").join(" ");
+  const past=(t.match(PAST)||[]).length, fut=(t.match(FUT)||[]).length, pres=(t.match(PRES)||[]).length;
+  return {has:[past>=3,pres>=3,fut>=1].filter(Boolean).length, past, fut, pres};
+}
 function areasOf(r){
   const ans=(r.detail||{}).answers||[];
   if(r.noMeasure) return [];
@@ -297,14 +319,18 @@ function areasOf(r){
     const longR=allW.length?allW.filter(w=>w.length>=7).length/allW.length:0;
     const conn=sc.map(a=>a.conn||0);
     const longPct=sc.length?sc.filter(a=>a.sec>=30).length/sc.length*100:0;
-    if(r.byTime){ const longPct0=sc.length?sc.filter(a=>a.sec>=30).length/sc.length*100:0; return [{nm:"분량",v:clamp(avg(words)/130*100),note:`말한 시간으로 계산한 값 · 문제당 평균 ${Math.round(avg(secs))}초`},{nm:"끝까지 말하기",v:clamp(longPct0),note:`30초 이상 말한 문제 ${Math.round(longPct0)}%`}]; }
-    return [
-      {nm:"분량",v:clamp(avg(words)/130*100),note:`문제당 평균 ${Math.round(avg(words))}단어`},
-      {nm:"속도",v:clamp(avg(wpms)/120*100),note:`분당 평균 ${Math.round(avg(wpms))}단어`},
-      {nm:"문장 연결",v:clamp(avg(conn)/6*100),note:`연결어 평균 ${avg(conn).toFixed(1)}개`},
-      {nm:"어휘",v:clamp(longR/0.18*100),note:`긴 단어(7글자 이상) ${Math.round(longR*100)}%`},
-      {nm:"끝까지 말하기",v:clamp(longPct),note:`30초 이상 말한 문제 ${Math.round(longPct)}%`}
-    ];
+    if(r.byTime){ const longPct0=sc.length?sc.filter(a=>a.sec>=30).length/sc.length*100:0; return [{nm:"분량",v:clamp(avg(words)/130*100),note:`말한 시간으로 계산한 값 · 문제당 평균 ${Math.round(avg(secs))}초`}] ; }
+    const ls=listenStats(sc), ts=tenseStats(sc), fillN=(sc.map(a=>a.text||"").join(" ").match(FILL)||[]).length;
+    const listenV=ls?clamp(ls.onTopic/ls.n*100):null;
+    const pastV=ls&&ls.exp?ls.expPast/ls.exp*100:null, varV=ts.has/3*100;
+    const tenseV=clamp(pastV==null?varV:(pastV+varV)/2);
+    const out=[];
+    if(listenV!=null) out.push({nm:"듣기 이해",v:listenV,note:`질문 주제에 맞게 답한 문제 ${ls.onTopic}/${ls.n}${ls.replays?` · 다시 듣기 ${ls.replays}번 사용`:" · 다시 듣기 안 씀"}`});
+    out.push({nm:"유창성",v:clamp(avg(wpms)/120*100),note:`분당 평균 ${Math.round(avg(wpms))}단어${fillN?` · 머뭇거림(um, uh) ${fillN}번`:""}`});
+    out.push({nm:"분량",v:clamp(avg(words)/130*100),note:`문제당 평균 ${Math.round(avg(words))}단어 · 30초 이상 ${Math.round(longPct)}%`});
+    out.push({nm:"시제·전개",v:tenseV,note:`과거 ${ts.past}·현재 ${ts.pres}·미래 ${ts.fut}번 사용${ls&&ls.exp?` · 경험 질문 ${ls.exp}개 중 과거형 ${ls.expPast}개`:""}`});
+    out.push({nm:"문장 연결",v:clamp(avg(conn)/6*100),note:`연결어 평균 ${avg(conn).toFixed(1)}개`});
+    return out;
   }
   const by=(f)=>ans.filter(f);
   const fillAvg=l=>clamp(avg(l.map(a=>a.fill??0)));
@@ -365,8 +391,32 @@ function buildSheet(r0,teacher){
 }
 let CUR=null;
 function drawSheet(){ if(CUR) $("sheet").innerHTML=buildSheet(CUR,$("tcText").value.trim()); }
+function autoCommentOpic(r){
+  const name=(r.shown||r.member_name||"회원")+"님", areas=areasOf(r), ans=(r.detail||{}).answers||[];
+  const A=nm=>areas.find(a=>a.nm===nm), T=TXT.opic;
+  const min=Math.round(ans.reduce((s,a)=>s+(a.sec||0),0)/60);
+  const m=(r.est_grade||"").match(/^(IL|IM1|IM2|IM3|IH|AL)/), on=m?m[1]:"";
+  const p=[];
+  p.push(r.completed?`${name}, 오픽 모의시험을 ${ans.length}문제 끝까지${min?`, 약 ${min}분 동안`:""} 마친 것만으로도 정말 대단해요! 👏`:`${name}, 오픽 모의시험에 도전한 것만으로도 큰 한 걸음이에요! 👏`);
+  p.push("오픽은 질문을 잘 듣고, 막힘없이 이어서 말하는 힘을 보는 시험이에요.");
+  if(r.byTime){
+    p.push("이번에는 기기 설정 때문에 말한 내용을 분석하지 못해, 말한 시간 기준의 임시 결과로 보여 드려요. 선생님이 녹음을 직접 들어 보고 듣기와 유창성을 더 자세히 알려 드릴게요.");
+  }else{
+    if(on&&r.goal){ const d=OPIC_LV.indexOf(r.goal)-OPIC_LV.indexOf(on); p.push(d<=0?`예상 등급은 ${on}로 목표(${r.goal})에 도달했어요! 🎉`:`예상 등급은 ${on}이고, 목표 ${r.goal}까지 ${d}단계 남았어요.`); }
+    const L=A("듣기 이해"), F=A("유창성"), N=A("분량"), S=A("시제·전개");
+    if(L) p.push(`【듣기】 ${L.note}. ${T["듣기 이해"][tier(L.v)]}`);
+    if(F) p.push(`【유창성】 ${F.note}. ${T["유창성"][tier(F.v)]}`);
+    if(N&&N.v<75) p.push(`【분량】 ${T["분량"][tier(N.v)]}`);
+    if(S) p.push(`【이야기 전개】 ${T["시제·전개"][tier(S.v)]}`);
+  }
+  const tip={IL:"IL~IM1을 목표로 한다면 한 문제에 3~4문장, '의견 → 이유 1개'만 지켜도 충분해요.",IM1:"IM1을 목표로 한다면 한 문제에 4~5문장, '의견 → 이유 → 예시'를 연습해 보세요.",IM2:"IM2~IM3을 목표로 한다면 문제마다 50~70단어를 말하고 연결어를 3개 이상 써 보세요.",IM3:"IM3을 목표로 한다면 문제마다 70단어 이상, 경험은 과거형으로 '상황 → 일어난 일 → 느낌' 순서로 말해 보세요.",IH:"IH를 목표로 한다면 과거·현재·미래를 오가며 80~100단어로 이야기를 이어 가고, 롤플레이에서는 질문을 3~4개 자연스럽게 해 보세요.",AL:"AL을 목표로 한다면 비교·의견 문제에서 근거와 예시를 들어 120단어 이상으로 말해 보세요."}[r.goal]||"";
+  if(tip) p.push(tip);
+  p.push("다음 시험까지 매일 문제 1개를 골라 1분씩 말하고 녹음해 들어 보세요. 꾸준히 하면 금방 늘 거예요!");
+  return p.join(" ");
+}
 function autoComment(r0){
   const r=prepRow(r0), isO=r.exam==="opic", name=(r.shown||r.member_name||"회원")+"님";
+  if(isO&&!r.noMeasure) return autoCommentOpic(r);
   const areas=areasOf(r), T=TXT[r.exam], ans=(r.detail||{}).answers||[];
   const exam=isO?"오픽":"토익 스피킹", min=Math.round(ans.reduce((s,a)=>s+(a.sec||0),0)/60);
   const p=[];

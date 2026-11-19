@@ -506,7 +506,7 @@ async function saveResult(done){
     if(!window.__sb||!window.__uid) return false;
     const base="opic-"+Date.now();
     const paths=await Promise.all(answers.map((a,i)=>uploadAnswer(a,i,base)));
-    const rows=answers.map((a,i)=>({n:i+1,type:a.q.type,topic:a.q.topic||"",q:a.q.text,sec:a.sec,words:analyze(a.text,a.sec).n,conn:analyze(a.text,a.sec).conn,text:a.text,audio:paths[i]}));
+    const rows=answers.map((a,i)=>({n:i+1,type:a.q.type,topic:a.q.topic||"",q:a.q.text,sec:a.sec,words:analyze(a.text,a.sec).n,conn:analyze(a.text,a.sec).conn,text:a.text,audio:paths[i],replay:a.replayed?1:0}));
     const {error}=await window.__sb.from("mock_results").insert({user_id:window.__uid,exam:"opic",member_name:$("name").value.trim(),age:parseInt($("age").value,10)||null,goal:grade,completed:done,est_grade:(window.__res||{}).est||null,est_score:null,detail:{answers:rows,env:ENV()}});
     return !error;
   }catch(_){ return false; }
@@ -771,7 +771,7 @@ function startRec(){
   rec.onstop = async ()=>{
     await stopSR();
     const blob = new Blob(chunks,{type:rec.mimeType||"audio/webm"});
-    answers[idx] = {q, blob, url:URL.createObjectURL(blob), sec:secs, text:heard.trim()};
+    answers[idx] = {q, blob, url:URL.createObjectURL(blob), sec:secs, text:heard.trim(), replayed:(replays<=0)};
     if(quitting){ finish(); return; }
     if(idx<exam.length-1){ idx++; showQ(); } else finish();
   };
