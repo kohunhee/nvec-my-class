@@ -225,7 +225,8 @@ async function fillDetail(d){
   const r=RES[+d.dataset.i], ans=(r.detail||{}).answers||[], paths=ans.map(a=>a.audio).filter(Boolean);
   let urls={};
   if(paths.length){ try{ const {data}=await sb.storage.from("recordings").createSignedUrls(paths,3600); (data||[]).forEach(x=>{ if(x.signedUrl) urls[x.path]=x.signedUrl; }); }catch(_){} }
-  d.querySelector(".dbody").innerHTML=ans.map(a=>{
+  const env=(r.detail||{}).env, envLine=env?`<div class="muted" style="margin:4px 0">📱 기기: ${esc(deviceOf(env.ua))} · 글자 변환 시험: ${esc(env.srTest||"기록 없음")}${(env.srErrs&&env.srErrs.length)?" · 오류: "+esc(env.srErrs.join(", ")):""}</div>`:"";
+  d.querySelector(".dbody").innerHTML=envLine+ans.map(a=>{
     const au=a.audio?(urls[a.audio]?`<audio controls src="${urls[a.audio]}"></audio>`:`<span class="muted">녹음 보관 기간이 지났어요</span>`):`<span class="muted">녹음 없음</span>`;
     return `<div class="ans"><b>${a.n}번</b> ${esc(KIND[a.type]||a.type||"")} · ${a.sec}초 · ${a.words}단어${a.acc!=null?" · 읽기 정확도 "+a.acc+"%":""}${au}<pre>${esc(a.text||"(글자 변환 없음)")}</pre></div>`;
   }).join("")||"내용 없음";
@@ -266,8 +267,26 @@ const TXT={
     "의견 말하기 (11번)":{hi:"의견과 이유를 길게 말했어요.",mid:"예시를 하나 더 들어 보세요.",low:"다음 목표: 의견 → 이유 → 예시 순서로 60초 말하기."}
   }
 };
+const GRADE_TH=[[170,"AL"],[130,"IH"],[100,"IM3"],[70,"IM2"],[40,"IM1"],[20,"IL"]];
+function prepRow(r){
+  const ans=(r.detail||{}).answers||[];
+  const none=ans.length>0&&!ans.some(a=>(a.words||0)>0);
+  if(!none) return Object.assign({},r,{byTime:false,noMeasure:false});
+  if(r.exam!=="opic") return Object.assign({},r,{byTime:false,noMeasure:true});
+  const sc=ans.length>1?ans.slice(1):ans, w=Math.round(avg(sc.map(a=>a.sec||0))*1.3);
+  let est=(GRADE_TH.find(t=>w>=t[0])||[0,"IL"])[1];
+  const lv={IL:2,IM1:3,IM2:4,IM3:4,IH:5,AL:6}[r.goal]||6, cap={2:"IM2",3:"IM3",4:"IH",5:"AL",6:"AL"}[lv];
+  if(OPIC_LV.indexOf(est)>OPIC_LV.indexOf(cap)) est=cap;
+  return Object.assign({},r,{est_grade:r.est_grade||est,detail:Object.assign({},r.detail,{answers:ans.map(a=>Object.assign({},a,{words:Math.round((a.sec||0)*1.3),conn:0}))}),byTime:true,noMeasure:false});
+}
+function deviceOf(ua){
+  ua=ua||""; const os=/iPhone|iPad/.test(ua)?"아이폰/아이패드":/Android/.test(ua)?"안드로이드 폰":/Windows/.test(ua)?"윈도우 컴퓨터":/Mac/.test(ua)?"맥":"기타";
+  const br=/KAKAOTALK/i.test(ua)?"카카오톡 안":/SamsungBrowser/i.test(ua)?"삼성 인터넷":/Edg\//.test(ua)?"엣지":/Whale/i.test(ua)?"웨일":/CriOS/.test(ua)?"iOS 크롬":/Chrome/.test(ua)?"크롬":/Safari/.test(ua)?"사파리":"기타";
+  return os+" · "+br;
+}
 function areasOf(r){
   const ans=(r.detail||{}).answers||[];
+  if(r.noMeasure) return [];
   if(r.exam==="opic"){
     const sc=ans.length>1?ans.slice(1):ans;
     const words=sc.map(a=>a.words||0), secs=sc.map(a=>a.sec||0);
@@ -276,6 +295,7 @@ function areasOf(r){
     const longR=allW.length?allW.filter(w=>w.length>=7).length/allW.length:0;
     const conn=sc.map(a=>a.conn||0);
     const longPct=sc.length?sc.filter(a=>a.sec>=30).length/sc.length*100:0;
+    if(r.byTime){ const longPct0=sc.length?sc.filter(a=>a.sec>=30).length/sc.length*100:0; return [{nm:"분량",v:clamp(avg(words)/130*100),note:`말한 시간으로 계산한 값 · 문제당 평균 ${Math.round(avg(secs))}초`},{nm:"끝까지 말하기",v:clamp(longPct0),note:`30초 이상 말한 문제 ${Math.round(longPct0)}%`}]; }
     return [
       {nm:"분량",v:clamp(avg(words)/130*100),note:`문제당 평균 ${Math.round(avg(words))}단어`},
       {nm:"속도",v:clamp(avg(wpms)/120*100),note:`분당 평균 ${Math.round(avg(wpms))}단어`},
@@ -295,7 +315,8 @@ function areasOf(r){
     {nm:"의견 말하기 (11번)",v:fillAvg(by(a=>a.type==="op")),note:"시간 안에 말한 양"}
   ];
 }
-function buildSheet(r,teacher){
+function buildSheet(r0,teacher){
+  const r=prepRow(r0);
   const areas=areasOf(r), T=TXT[r.exam], ans=(r.detail||{}).answers||[];
   const isO=r.exam==="opic";
   const d=new Date(r.created_at);
@@ -308,9 +329,11 @@ function buildSheet(r,teacher){
   let big="";
   if(isO){
     const g=(r.est_grade||"").match(/^(IL|IM1|IM2|IM3|IH|AL)/); const on=g?g[1]:"";
-    big=`<div class="sub">예상 참고 등급</div><div class="lv">${esc(on||r.est_grade||"-")}</div>
+    big=`<div class="sub">${r.byTime?"임시 참고 등급 (말한 시간 기준)":"예상 참고 등급"}</div><div class="lv">${esc(on||r.est_grade||"-")}</div>
       <div class="ladder">${OPIC_LV.map(l=>`<i class="${l===on?"on":""}">${l}</i>`).join("")}</div>
       <div class="sub" style="margin-top:8px">목표 등급 ${esc(r.goal||"-")}${on&&r.goal?(OPIC_LV.indexOf(on)>=OPIC_LV.indexOf(r.goal)?" · 목표 달성! 🎉":" · 목표까지 "+(OPIC_LV.indexOf(r.goal)-OPIC_LV.indexOf(on))+"단계"):""}</div>`;
+  }else if(r.noMeasure){
+    big=`<div class="sub">예상 참고 점수</div><div class="lv" style="font-size:30px">측정 불가</div><div class="sub">글자 변환이 되지 않아 점수를 계산하지 못했어요. 선생님이 녹음을 듣고 평가해 드려요.</div>`;
   }else{
     const sc=r.est_score||0, pct=Math.min(100,sc/200*100);
     const band=([...TOEIC_BANDS].reverse().find(b=>sc>=b[1])||["NH 이하"])[0];

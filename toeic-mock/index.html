@@ -446,6 +446,7 @@ async function uploadAnswer(a,i,base){
     return error?null:path;
   }catch(_){ return null; }
 }
+function ENV(){ try{ return {ua:navigator.userAgent.slice(0,200),sr:!!SR,srTest:window.__srTest||null,srErrs:[...new Set(srErrs)]}; }catch(_){ return {}; } }
 async function saveResult(done){
   try{
     if(!window.__sb||!window.__uid) return false;
@@ -463,7 +464,7 @@ async function saveResult(done){
       return row;
     });
     const r=window.__res||{};
-    const {error}=await window.__sb.from("mock_results").insert({user_id:window.__uid,exam:"toeic",member_name:$("name").value.trim(),age:parseInt($("age").value,10)||null,goal:grade,completed:done,est_grade:r.est||null,est_score:r.score||null,detail:{answers:rows}});
+    const {error}=await window.__sb.from("mock_results").insert({user_id:window.__uid,exam:"toeic",member_name:$("name").value.trim(),age:parseInt($("age").value,10)||null,goal:grade,completed:done,est_grade:r.est||null,est_score:r.score||null,detail:{answers:rows,env:ENV()}});
     return !error;
   }catch(_){ return false; }
 }
@@ -494,7 +495,7 @@ function build(){
 /* ───────── 음성 인식 · 목소리 (오픽 모의시험과 같은 방식) ───────── */
 let stream=null;
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recog=null, heard="", srOn=false, srDone=null;
+let recog=null, heard="", srOn=false, srDone=null, srErrs=[];
 
 function startSR(){
   heard=""; srOn=false;
@@ -510,7 +511,7 @@ function startSR(){
     if(srOn){ try{recog.start();}catch(_){ } }   // 녹음 중이면 자동으로 이어서 듣기
     else if(srDone){ srDone(); srDone=null; }
   };
-  recog.onerror = ()=>{};
+  recog.onerror = e=>{ try{ srErrs.push((e&&e.error)||"error"); }catch(_){} };
   srOn=true;
   try{recog.start();}catch(_){ }
 }
@@ -635,10 +636,17 @@ $("micBtn").onclick=async()=>{
   (function tick(){ if(!run) return; an.getByteTimeDomainData(data); let m=0; for(const v of data) m=Math.max(m,Math.abs(v-128)); $("meter").style.width=Math.min(100,m/128*220)+"%"; requestAnimationFrame(tick); })();
   const ch=[], r=new MediaRecorder(stream);
   r.ondataavailable=e=>ch.push(e.data);
-  r.onstop=()=>{ run=false; $("meter").style.width="0"; ctx.close();
+  r.onstop=async()=>{ run=false; $("meter").style.width="0"; ctx.close();
     const p=$("micPlay"); p.src=URL.createObjectURL(new Blob(ch,{type:r.mimeType})); p.classList.remove("hidden"); p.play().catch(()=>{});
-    $("micBtn").disabled=false; $("micBtn").textContent="🎙️ 다시 녹음해 보기"; $("micOk").disabled=false; };
-  r.start(); setTimeout(()=>r.stop(),4000);
+    $("micBtn").disabled=false; $("micBtn").textContent="🎙️ 다시 녹음해 보기"; $("micOk").disabled=false;
+    await stopSR();
+    const okTxt=heard.trim(); window.__srTest = SR ? (okTxt?"ok":"fail") : "unsupported";
+    const mm=$("micMsg"); mm.classList.remove("hidden");
+    if(!SR){ mm.innerHTML="⚠️ 이 브라우저는 <b>글자 변환(점수 측정)</b>을 지원하지 않아요. 시험은 볼 수 있지만 등급은 정확히 나오지 않아요. <b>컴퓨터나 갤럭시의 크롬</b>으로 열면 측정돼요."; }
+    else if(okTxt){ mm.innerHTML="✅ 글자 변환이 잘 돼요! 들린 말: <i id='sttHeard'></i>"; $("sttHeard").textContent=okTxt; }
+    else{ mm.innerHTML="⚠️ 목소리는 녹음되지만 <b>글자 변환이 안 됐어요</b>. 이대로 시험을 보면 등급이 정확히 안 나올 수 있어요. 말을 조금 더 크게 다시 해 보시고, 계속 안 되면 <b>컴퓨터의 크롬</b>으로 열어 주세요."; }
+    $("micOk").textContent = (!SR||!okTxt) ? "그래도 계속 · 다음" : "내 목소리가 들려요 · 다음"; };
+  r.start(); startSR(); setTimeout(()=>r.stop(),4000);
 };
 let sampleRecorder=null;
 $("sampleBtn").onclick=()=>{
@@ -759,7 +767,7 @@ function finish(){
   });
   let top="";
   if(!SR) top=`<div class="warn">이 브라우저는 글자 변환을 지원하지 않아요. <b>크롬</b>으로 열면 분석이 나옵니다. (녹음 듣기는 가능해요)</div>`;
-  else if(!heardAny) top=`<div class="warn">말소리를 글자로 바꾸지 못했어요. 마이크 소리가 작았거나 글자 변환이 막혔을 수 있어요. 녹음 듣기는 아래에서 가능합니다.</div>`;
+  else if(!heardAny) top=`<div class="warn">말소리를 글자로 바꾸지 못했어요. 마이크 소리가 작았거나 글자 변환이 막혔을 수 있어요. <b>녹음은 저장됐어요.</b> 선생님이 듣고 평가해 드려요. 컴퓨터나 갤럭시의 <b>크롬</b>으로 하면 점수가 나와요.</div>`;
   else{
     const rd=per.filter((p,i)=>answers[i].t.kind==="read"), oth=per.filter((p,i)=>answers[i].t.kind!=="read");
     const readAcc=rd.length?rd.reduce((s,p)=>s+p.acc,0)/rd.length:0;
