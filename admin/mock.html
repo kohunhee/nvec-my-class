@@ -121,6 +121,8 @@ pre{white-space:pre-wrap;font-size:13px;background:#faf7f0;padding:10px;border-r
       <p class="muted" style="margin:4px 0 8px">아래 「선생님 한마디」를 적으면 결과표에 바로 들어가요. 다 되면 이미지로 저장해서 카카오톡으로 보내거나, PDF로 저장해 주세요.</p>
       <textarea id="tcText" rows="2" placeholder="선생님 한마디 (예: 한 달 사이 말하는 양이 눈에 띄게 늘었어요. 이대로 꾸준히 해 봐요!)"></textarea>
       <div class="row">
+        <button id="autoTc" class="sec">✨ 한마디 자동으로 쓰기</button>
+        <button id="saveRep">💾 결과표 저장</button>
         <button id="savePng">이미지(PNG)로 저장</button>
         <button id="printBtn" class="sec">인쇄 / PDF 저장</button>
         <button id="repClose" class="sec">닫기</button>
@@ -217,7 +219,7 @@ async function loadResults(){
   $("rMsg").textContent=RES.length?`${RES.length}건`:"아직 저장된 결과가 없어요. 회원이 시험을 마치면 여기에 나타나요.";
   $("dlCsv").disabled=$("dlTxt").disabled=!RES.length;
   $("tbl").classList.toggle("hidden",!RES.length);
-  $("rows").innerHTML=RES.map((r,i)=>`<tr><td>${esc(new Date(r.created_at).toLocaleString("ko-KR"))}</td><td><b>${esc(r.shown)}</b><br><small class="muted">${esc(r.mid)}</small></td><td>${esc(r.age??"")}</td><td>${r.exam==="opic"?"오픽":"토스"}</td><td>${esc(r.goal||"")}</td><td>${r.completed?"✅":"중간에 그만둠"}</td><td>${esc(r.est_grade||"")}${r.est_score?" · "+r.est_score+"점":""}</td><td><details data-i="${i}"><summary>보기·듣기</summary><div class="dbody">불러오는 중…</div></details></td><td><button class="small" data-rep="${i}">결과표</button></td></tr>`).join("");
+  $("rows").innerHTML=RES.map((r,i)=>`<tr><td>${esc(new Date(r.created_at).toLocaleString("ko-KR"))}</td><td><b>${esc(r.shown)}</b><br><small class="muted">${esc(r.mid)}</small></td><td>${esc(r.age??"")}</td><td>${r.exam==="opic"?"오픽":"토스"}</td><td>${esc(r.goal||"")}</td><td>${r.completed?"✅":"중간에 그만둠"}</td><td>${esc(r.est_grade||"")}${r.est_score?" · "+r.est_score+"점":""}</td><td><details data-i="${i}"><summary>보기·듣기</summary><div class="dbody">불러오는 중…</div></details></td><td><button class="small" data-rep="${i}">결과표${r.report_saved_at?" ✅":""}</button></td></tr>`).join("");
   document.querySelectorAll("#rows details").forEach(d=>d.addEventListener("toggle",()=>{ if(d.open&&!d.dataset.done){ d.dataset.done=1; fillDetail(d); } }));
   document.querySelectorAll("[data-rep]").forEach(b=>b.onclick=()=>openReport(+b.dataset.rep));
 }
@@ -363,11 +365,44 @@ function buildSheet(r0,teacher){
 }
 let CUR=null;
 function drawSheet(){ if(CUR) $("sheet").innerHTML=buildSheet(CUR,$("tcText").value.trim()); }
+function autoComment(r0){
+  const r=prepRow(r0), isO=r.exam==="opic", name=(r.shown||r.member_name||"회원")+"님";
+  const areas=areasOf(r), T=TXT[r.exam], ans=(r.detail||{}).answers||[];
+  const exam=isO?"오픽":"토익 스피킹", min=Math.round(ans.reduce((s,a)=>s+(a.sec||0),0)/60);
+  const p=[];
+  p.push(r.completed?`${name}, ${exam} 모의시험을 ${ans.length}문제 끝까지${min?`, 약 ${min}분 동안`:""} 마친 것만으로도 정말 대단해요! 👏`:`${name}, ${exam} 모의시험에 도전한 것만으로도 큰 한 걸음이에요! 👏`);
+  if(r.noMeasure) p.push("이번에는 기기 설정 때문에 말한 내용을 글자로 분석하지 못해 점수를 계산하지 못했어요. 선생님이 녹음을 직접 듣고 알려 드릴게요.");
+  else if(r.byTime) p.push("이번에는 기기 설정 때문에 말한 내용을 분석하지 못해, 말한 시간 기준의 임시 결과로 보여 드려요.");
+  else if(isO){
+    const m=(r.est_grade||"").match(/^(IL|IM1|IM2|IM3|IH|AL)/), on=m?m[1]:"";
+    if(on&&r.goal){ const d=OPIC_LV.indexOf(r.goal)-OPIC_LV.indexOf(on); p.push(d<=0?`예상 등급은 ${on}로, 목표(${r.goal})에 도달했어요! 🎉`:`예상 등급은 ${on}이에요. 목표 ${r.goal}까지 ${d}단계, 충분히 가까워요.`); }
+  }else if(r.est_score){ const band=([...TOEIC_BANDS].reverse().find(b=>r.est_score>=b[1])||["NH 이하"])[0]; p.push(`예상 점수는 약 ${r.est_score}점(${band})이에요${r.goal?`. 목표는 ${r.goal}이니 한 걸음씩 가 봐요`:""}.`); }
+  const sorted=areas.slice().sort((a,b)=>b.v-a.v);
+  if(sorted.length){
+    const best=sorted[0], low=sorted[sorted.length-1];
+    if(best.v>=45) p.push(`특히 "${best.nm}"를 잘했어요(${best.v}점). ${best.note}.`);
+    if(low.v<75&&low!==best){ const g=T[low.nm][low.v<45?"low":"mid"].replace(/^다음 목표:\s*/,""); p.push(`"${low.nm}"는 조금만 더 하면 금방 올라가요: ${g}`); }
+  }
+  p.push((r.byTime||r.noMeasure)?"다음에는 컴퓨터나 크롬으로 한 번 더 해 보면 말한 내용까지 정확히 분석돼요. 지금처럼 꾸준히 해 봐요!":"수업 시간에 이 부분을 같이 연습해 봐요. 꾸준히 하면 금방 늘 거예요!");
+  return p.join(" ");
+}
 function openReport(i){
-  CUR=RES[i]; $("tcText").value=""; $("pngMsg").textContent="";
+  CUR=RES[i]; $("tcText").value=CUR.teacher_comment||autoComment(CUR);
+  $("pngMsg").style.color="#172033"; $("pngMsg").textContent=CUR.report_saved_at?"저장된 결과표예요. 고친 뒤 다시 저장할 수 있어요.":"선생님 한마디를 자동으로 써 두었어요. 읽어 보고 고친 뒤 「결과표 저장」을 눌러 주세요.";
   drawSheet(); $("repWrap").classList.remove("hidden"); document.body.style.overflow="hidden";
 }
 $("tcText").oninput=drawSheet;
+$("autoTc").onclick=()=>{ if(!CUR) return; if($("tcText").value.trim()&&!confirm("지금 적은 한마디를 지우고 자동으로 새로 쓸까요?")) return; $("tcText").value=autoComment(CUR); drawSheet(); };
+$("saveRep").onclick=async()=>{
+  if(!CUR||CUR.id==null) return;
+  const t=$("tcText").value.trim(), m=$("pngMsg"); m.style.color="#172033"; m.textContent="저장 중…";
+  const now=new Date().toISOString();
+  const {data,error}=await sb.from("mock_results").update({teacher_comment:t||null,report_saved_at:now}).eq("id",CUR.id).select("id");
+  if(error||!data||!data.length){ m.style.color="#b23b3b"; m.textContent="저장하지 못했어요. "+(error?error.message:"권한을 확인해 주세요."); return; }
+  CUR.teacher_comment=t; CUR.report_saved_at=now;
+  m.style.color="#18794e"; m.textContent="결과표를 저장했어요. 다음에 열면 그대로 나와요.";
+  loadResults();
+};
 $("repClose").onclick=()=>{ $("repWrap").classList.add("hidden"); document.body.style.overflow=""; };
 $("printBtn").onclick=()=>window.print();
 $("savePng").onclick=async()=>{
