@@ -19,7 +19,7 @@
     '메인교재 20분 말하기':[
       {name:'아이캔톡 5회 쉐도잉',dir:'audio/icantalk/',items:seq(20,u=>['Unit '+u+' · 문장마다 5번 반복','u'+pad(u)+'.mp3'])},
       {name:'토익스피킹 10회 쉐도잉',dir:'audio/toeic-sb/',items:seq(40,u=>['Unit '+u+' · 문장마다 10번 반복','u'+pad(u)+'.mp3'])},
-      ...[['','momentum-b'],[' 2','momentum-b2'],[' 3','momentum-b3']].map(a=>({name:'Momentum B'+(a[0]||' 1'),dir:'audio/'+a[1]+'/',items:seq(20,u=>MM.map((n,k)=>['Unit '+u+' · '+n,'u'+pad(u)+'-'+MF[k]+'.mp3'])).flat()})),
+      ...[['','momentum-b'],[' 2','momentum-b2'],[' 3','momentum-b3']].map(a=>({name:'Momentum B'+(a[0]||' 1'),dir:'audio/'+a[1]+'/',items:seq(20,u=>MM.map((n,k)=>['Unit '+u+' · '+n+' · 10번 반복','u'+pad(u)+'-'+MF[k]+'.mp3'])).flat()})),
       ...[3,4,5,6,7,8].map(l=>({name:'Topic Talk Level '+l,dir:'audio/topic-'+l+'/',items:seq(60,u=>['Unit '+u,'u'+pad(u)+'.mp3'])}))
     ]
   };
